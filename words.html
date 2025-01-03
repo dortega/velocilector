@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velocilector - Consigue mayor velocidad en la lectura de las 1000 palabras más utilizadas en Castellano.</title>
+    <style>
+         body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #ECECEA;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            position: relative;
+        }
+        #logo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 133px;
+            height: 100px;
+        }
+        #word {
+            font-size: 2em;
+            line-height: 1.5;
+            transition: font-size 0.3s ease;
+            display: none;
+        }
+        #word.game-mode {
+            font-size: 5em;
+            display: block;
+        }
+        #menu {
+            padding: 20px;
+            border: 2px solid #009B7D;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            text-align: left;
+        }
+        #menu-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #009B7D;
+        }
+        #menu-options {
+            font-size: 1.2em;
+            line-height: 1.5;
+            color: #555;
+        }
+        #counter {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5em;
+            color: #009B7D;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        #progress-bar {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: var(--bar-width, 300px);
+            height: 20px;
+            background-color: rgba(0, 155, 125, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+        }
+        #progress-bar-inner {
+            width: 100%;
+            height: 100%;
+            background-color: #009B7D;
+            transition: width 0.1s linear;
+        }
+        #exit-message {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1em;
+            color: #009B7D;
+        }
+    </style>
+</head>
+<body>
+    <img id="logo" src="velocilector.png" alt="Logo del Juego">
+    <div id="menu">
+        <div id="menu-title">Presiona 1 o 2 para elegir modo</div>
+        <div id="menu-options">
+            <div><strong>Modo 1:</strong> Presiona espacio para cambiar de palabra.</div>
+            <div style="max-width: 350px; margin-top: 10px;"><strong>Modo 2:</strong> Las palabras se muestran automáticamente cada 5 segundos,<br> y el tiempo se reduce un 5% cada 20 palabras.</div>
+        </div>
+    </div>
+    <div id="counter" style="display: none;">Palabras: 0</div>
+    <div id="progress-bar">
+        <div id="progress-bar-inner"></div>
+    </div>
+    <div id="word"></div>
+    <div id="exit-message" style="display: none;">Presiona "Esc" para salir del juego.</div>
+
+    <script>
+        // Lista de las 500 palabras más usadas en español (ejemplo reducido para simplicidad)
+        const verbs = [
+            "haber", "ser", "estar", "ir", "tener", "hacer", "poder", "decir", "ver", "dar",
+            "saber", "querer", "llegar", "pasar", "deber", "poner", "parecer", "quedar", "creer", "hablar",
+            "llevar", "dejar", "seguir", "encontrar", "llamar", "venir", "pensar", "salir", "volver", "tomar",
+            "conocer", "vivir", "sentir", "tratar", "mirar", "contar", "empezar", "esperar", "buscar", "entrar",
+            "trabajar", "escribir", "perder", "producir", "ocurrir", "entender", "pedir", "recibir", "recordar", "terminar",
+            "permitir", "aprender", "servir", "necesitar", "resultar", "leer", "caer", "cambiar", "abrir", "considerar",
+            "oír", "acabar", "convertir", "ganar", "formar", "traer", "partir", "morir", "aceptar", "realizar",
+            "suponer", "comprender", "lograr", "explicar", "preguntar", "tocar", "reconocer", "estudiar", "alcanzar", "nacer",
+            "dirigir", "utilizar", "pagar", "ayudar", "gustar", "jugar", "escuchar", "cumplir", "ofrecer", "descubrir",
+            "levantar", "intentar", "usar", "decidir", "repetir", "obtener", "comer", "beber", "viajar", "descansar",
+            "despertar", "caminar", "comprar", "correr", "preparar", "vivir", "enseñar", "amar", "atender", "bailar",
+            "dormir", "soñar", "cuidar", "gritar", "crecer", "guardar", "enviar", "juntar", "saltar", "trabajar",
+            "expresar", "imaginar", "reír", "construir", "volar", "nadar", "luchar", "pensar", "descargar", "prestar",
+            "respetar", "comenzar", "limpiar", "subir", "bajar", "medir", "andar", "celebrar", "habitar", "resistir",
+            "contestar", "prometer", "avisar", "analizar", "apoyar", "estimar", "ganar", "exigir", "proponer", "entregar",
+            "votar", "notar", "sumar", "reparar", "invitar", "reunir", "exponer", "desarrollar", "ofrecer", "temer",
+            "compartir", "intentar", "renovar", "diseñar", "mantener", "descender", "avanzar", "meditar", "probar", "conquistar",
+            "predecir", "desafiar", "satisfacer", "rescatar", "encender", "detener", "recomendar", "conservar", "modificar", "revisar",
+            "controlar", "firmar", "gestionar", "consultar", "superar", "aprobar", "investigar", "desear", "criticar", "opinar",
+            "describir", "admirar", "presentar", "cantar", "llorar", "detallar", "sufrir", "proteger", "atacar", "reflexionar",
+            "reaccionar", "salvar", "estudiar", "responder", "dudar", "conectar", "informar", "visitar", "organizar", "reunir",
+            "asistir", "dirigir", "integrar", "explotar", "descartar", "instalar", "resaltar", "evaluar", "reemplazar", "eliminar",
+            "intentar", "manejar", "fortalecer", "reconstruir", "vencer", "derrotar", "educar", "inspirar", "valorar", "negociar",
+            "enriquecer", "innovar", "animar", "declarar", "sugerir", "percibir", "proyectar", "priorizar", "ajustar", "experimentar",
+            "transformar", "descifrar", "restaurar", "cooperar", "orientar", "absorber", "moderar", "ampliar", "documentar", "resolver",
+            "identificar", "reunir", "despejar", "contemplar", "relajar", "equilibrar", "planificar", "verificar", "generar", "publicar",
+            "observar", "colaborar", "evaluar", "repasar", "limitar", "acompañar", "introducir", "intervenir", "programar", "reforzar",
+            "confirmar", "reconocer", "detallar", "practicar", "detectar", "dirigir", "rescatar", "contrastar", "promocionar", "conducir",
+            "reclamar", "marcar", "distinguir", "transmitir", "emprender", "revisar", "protestar", "justificar", "aprobar", "avanzar",
+            "comunicar", "lidiar", "redactar", "suministrar", "agrupar", "multiplicar", "centralizar", "desafiar", "suspender", "mediar",
+            "optimizar", "canalizar", "gestionar", "dirigir", "iniciar", "recalcar", "coordinar", "monitorear", "implementar", "calcular"
+        ];
+
+        const names = [
+            "casa", "mundo", "día", "vida", "persona", "tiempo", "año", "hombre", "mujer", "niño",
+            "familia", "amigo", "ciudad", "país", "historia", "mañana", "noche", "tarde", "coche", "libro",
+            "escuela", "universidad", "trabajo", "empresa", "calle", "animal", "perro", "gato", "árbol", "sol",
+            "luna", "mar", "montaña", "río", "cielo", "estrella", "flor", "bosque", "playa", "niña",
+            "hermano", "hermana", "padre", "madre", "abuelo", "abuela", "amiga", "vecino", "vecina", "doctor",
+            "profesor", "alumno", "juego", "película", "música", "comida", "bebida", "ropa", "zapato", "bolso",
+            "puerta", "ventana", "mesa", "silla", "pared", "suelo", "techo", "cuadro", "cocina", "baño",
+            "habitacion", "sala", "sofá", "cama", "armario", "ordenador", "teléfono", "reloj", "televisión", "radio",
+            "camino", "puente", "parque", "jardín", "banco", "edificio", "hospital", "iglesia", "mercado", "supermercado",
+            "tienda", "restaurante", "bar", "café", "cine", "teatro", "museo", "escultura", "pintura", "fotografía",
+            "viaje", "avión", "tren", "autobús", "bicicleta", "moto", "carretera", "autopista", "estación", "puerto",
+            "aeropuerto", "ciudadano", "turista", "cultura", "arte", "deporte", "fútbol", "baloncesto", "tenis", "natación",
+            "gimnasio", "carrera", "montañismo", "ciclismo", "equipo", "partido", "entrenador", "jugador", "árbitro", "espectador",
+            "fiesta", "cumpleaños", "boda", "navidad", "año nuevo", "feria", "concierto", "evento", "reunión", "celebración",
+            "noticia", "diario", "revista", "libro", "cuento", "novela", "poema", "carta", "sobre", "regalo",
+            "dinero", "billete", "moneda", "banco", "cajero", "cuenta", "tarjeta", "cheque", "factura", "recibo",
+            "mercancía", "producto", "artículo", "servicio", "negocio", "cliente", "comprador", "vendedor", "empleado", "jefe",
+            "gerente", "director", "secretario", "colega", "compañero", "sociedad", "economía", "política", "gobierno", "presidente",
+            "ministro", "diputado", "senador", "ley", "norma", "derecho", "justicia", "juez", "abogado", "criminal",
+            "policía", "delito", "pena", "cárcel", "testigo", "evidencia", "prueba", "informe", "documento", "certificado",
+            "oficina", "despacho", "archivo", "papel", "carpeta", "lápiz", "bolígrafo", "goma", "cuaderno", "libreta",
+            "notebook", "escritorio", "silla", "ventilador", "calefacción", "aire acondicionado", "lámpara", "bombilla", "enchufe", "interruptor",
+            "escuela", "instituto", "clase", "aula", "examen", "lección", "tarea", "proyecto", "laboratorio", "experimento",
+            "universidad", "facultad", "carrera", "estudiante", "profesor", "investigador", "tesis", "biblioteca", "libro", "autor",
+            "lector", "editor", "publicación", "artículo", "reseña", "crítica", "opinión", "lectura", "escritura", "estudio",
+            "pregunta", "respuesta", "solución", "problema", "tema", "materia", "disciplina", "ciencia", "tecnología", "ingeniería",
+            "matemáticas", "física", "química", "biología", "geografía", "historia", "filosofía", "sociología", "psicología", "educación",
+            "cultura", "arte", "literatura", "cine", "teatro", "danza", "pintura", "escultura", "arquitectura", "fotografía",
+            "música", "canción", "melodía", "ritmo", "sonido", "instrumento", "orquesta", "banda", "coro", "festival",
+            "exposición", "muestra", "concurso", "competencia", "premio", "galardón", "medalla", "trofeo", "certamen", "evento",
+            "desfile", "feria", "mercado", "taller", "curso", "seminario", "conferencia", "charla", "coloquio", "foro",
+            "mesa redonda", "debate", "asamblea", "encuentro", "reunión", "negociación", "acuerdo", "contrato", "pacto", "alianza",
+            "sociedad", "empresa", "organización", "institución", "asociación", "fundación", "cooperativa", "federación", "grupo", "club",
+            "equipo", "partido", "selección", "campeonato", "torneo", "liga", "temporada", "competición", "juego", "prueba",
+            "reto", "desafío", "meta", "objetivo", "propósito", "intención", "idea", "plan", "proyecto", "programa"
+        ];
+
+        const words = names.concat(verbs);
+
+        let mode = 0; // 0: no seleccionado, 1: modo sin tiempo, 2: modo con tiempo
+        let intervalId;
+        let timerInterval;
+        const initialTime = 5000; // Tiempo inicial en milisegundos (5 segundos)
+        const decreaseInterval = 20; // Cada cuántas palabras se reduce el tiempo
+        const decreaseRate = 0.05; // Porcentaje de reducción del tiempo
+        const progressBarWidth = 300; // Ancho de la barra de progreso en píxeles
+
+        let currentTime = initialTime;
+        let wordCount = 0;
+
+        document.addEventListener('keydown', (event) => {
+            const wordElement = document.getElementById('word');
+            const menuElement = document.getElementById('menu');
+            const counterElement = document.getElementById('counter');
+            const progressBar = document.getElementById('progress-bar');
+            const exitMessage = document.getElementById('exit-message');
+
+            if (mode === 0) {
+                if (event.code === 'Digit1') {
+                    mode = 1;
+                    wordCount = 0;
+                    counterElement.textContent = `Palabras: ${wordCount}`;
+                    counterElement.style.display = 'block';
+                    wordElement.classList.add('game-mode');
+                    wordElement.style.display = 'block';
+                    menuElement.style.display = 'none';
+                    progressBar.style.display = 'none';
+                    exitMessage.style.display = 'block';
+                    showRandomWord(); // Mostrar la primera palabra al entrar
+                } else if (event.code === 'Digit2') {
+                    mode = 2;
+                    wordCount = 0;
+                    counterElement.textContent = `Palabras: ${wordCount}`;
+                    counterElement.style.display = 'block';
+                    progressBar.style.display = 'block';
+                    wordElement.classList.add('game-mode');
+                    wordElement.style.display = 'block';
+                    menuElement.style.display = 'none';
+                    exitMessage.style.display = 'block';
+                    startTimedMode();
+                }
+            } else if (mode === 1 && event.code === 'Space') {
+                showRandomWord();
+                wordCount++;
+                counterElement.textContent = `Palabras: ${wordCount}`;
+                event.preventDefault();
+            } else if (event.code === 'Escape') {
+                resetGame();
+            }
+        });
+
+        function showRandomWord() {
+            const randomIndex = Math.floor(Math.random() * words.length);
+            document.getElementById('word').textContent = words[randomIndex];
+        }
+
+        function startTimedMode() {
+            const progressBarInner = document.getElementById('progress-bar-inner');
+            showRandomWord();
+
+            // Reiniciar la barra de progreso
+            progressBarInner.style.transition = "none";
+            progressBarInner.style.width = "100%";
+
+            // Iniciar la animación de la barra de progreso
+            setTimeout(() => {
+                progressBarInner.style.transition = `width ${currentTime}ms linear`;
+                progressBarInner.style.width = "0%";
+            }, 10);
+
+            // Configurar el siguiente ciclo de palabras
+            intervalId = setTimeout(() => {
+                wordCount++;
+                document.getElementById('counter').textContent = `Palabras: ${wordCount}`;
+
+                if (wordCount % decreaseInterval === 0) {
+                    currentTime = Math.max(500, currentTime * (1 - decreaseRate)); // No menos de 500 ms
+                }
+
+                startTimedMode(); // Reiniciar el ciclo
+            }, currentTime);
+        }
+
+
+        function resetGame() {
+            clearTimeout(intervalId);
+            clearTimeout(timerInterval);
+            mode = 0;
+            wordCount = 0;
+            currentTime = initialTime;
+            document.getElementById('word').classList.remove('game-mode');
+            document.getElementById('word').style.display = 'none';
+            document.getElementById('menu').style.display = 'block';
+            document.getElementById('counter').style.display = 'none';
+            document.getElementById('progress-bar').style.display = 'none';
+            document.getElementById('exit-message').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
