@@ -20,8 +20,8 @@
             position: absolute;
             top: 10px;
             left: 10px;
-            width: 133px;
-            height: 100px;
+            width: 50px;
+            height: 50px;
         }
         #word {
             font-size: 2em;
@@ -54,6 +54,23 @@
             line-height: 1.5;
             color: #555;
         }
+        #menu a {
+            display: block;
+            margin: 10px 0;
+            text-align: center;
+            font-size: 1.2em;
+            color: #009B7D;
+            text-decoration: none;
+            border: 1px solid #009B7D;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: rgba(0, 155, 125, 0.1);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        #menu a:hover {
+            background-color: #009B7D;
+            color: #fff;
+        }
         #counter {
             position: absolute;
             top: 10px;
@@ -61,6 +78,7 @@
             transform: translateX(-50%);
             font-size: 1.5em;
             color: #009B7D;
+            background-color: rgba(0, 155, 125, 0.1);
             padding: 5px 10px;
             border-radius: 5px;
             display: none;
@@ -81,7 +99,7 @@
             width: 100%;
             height: 100%;
             background-color: #009B7D;
-            transition: width 0.1s linear;
+            transition: width linear;
         }
         #exit-message {
             position: absolute;
@@ -98,8 +116,8 @@
     <div id="menu">
         <div id="menu-title">Presiona 1 o 2 para elegir modo</div>
         <div id="menu-options">
-            <div><strong>Modo 1:</strong> Presiona espacio para cambiar de palabra.</div>
-            <div style="max-width: 350px; margin-top: 10px;"><strong>Modo 2:</strong> Las palabras se muestran automáticamente cada 5 segundos,<br> y el tiempo se reduce un 5% cada 20 palabras.</div>
+            <a href="#" id="mode1">Modo 1: Manual</a>
+            <a href="#" id="mode2">Modo 2: Automático</a>
         </div>
     </div>
     <div id="counter" style="display: none;">Palabras: 0</div>
@@ -187,7 +205,6 @@
 
         let mode = 0; // 0: no seleccionado, 1: modo sin tiempo, 2: modo con tiempo
         let intervalId;
-        let timerInterval;
         const initialTime = 5000; // Tiempo inicial en milisegundos (5 segundos)
         const decreaseInterval = 20; // Cada cuántas palabras se reduce el tiempo
         const decreaseRate = 0.05; // Porcentaje de reducción del tiempo
@@ -196,46 +213,61 @@
         let currentTime = initialTime;
         let wordCount = 0;
 
-        document.addEventListener('keydown', (event) => {
+        document.getElementById('mode1').addEventListener('click', (event) => {
+            event.preventDefault();
+            startMode1();
+        });
+
+        document.getElementById('mode2').addEventListener('click', (event) => {
+            event.preventDefault();
+            startMode2();
+        });
+
+        function startMode1() {
+            mode = 1;
+            wordCount = 0;
+            const wordElement = document.getElementById('word');
+            const menuElement = document.getElementById('menu');
+            const counterElement = document.getElementById('counter');
+            const exitMessage = document.getElementById('exit-message');
+
+            counterElement.textContent = `Palabras: ${wordCount}`;
+            counterElement.style.display = 'block';
+            wordElement.classList.add('game-mode');
+            wordElement.style.display = 'block';
+            menuElement.style.display = 'none';
+            exitMessage.style.display = 'block';
+            showRandomWord();
+
+            document.body.addEventListener('click', changeWordMode1);
+        }
+
+        function changeWordMode1() {
+            if (mode === 1) {
+                showRandomWord();
+                wordCount++;
+                document.getElementById('counter').textContent = `Palabras: ${wordCount}`;
+            }
+        }
+
+        function startMode2() {
+            mode = 2;
+            wordCount = 0;
             const wordElement = document.getElementById('word');
             const menuElement = document.getElementById('menu');
             const counterElement = document.getElementById('counter');
             const progressBar = document.getElementById('progress-bar');
             const exitMessage = document.getElementById('exit-message');
 
-            if (mode === 0) {
-                if (event.code === 'Digit1') {
-                    mode = 1;
-                    wordCount = 0;
-                    counterElement.textContent = `Palabras: ${wordCount}`;
-                    counterElement.style.display = 'block';
-                    wordElement.classList.add('game-mode');
-                    wordElement.style.display = 'block';
-                    menuElement.style.display = 'none';
-                    progressBar.style.display = 'none';
-                    exitMessage.style.display = 'block';
-                    showRandomWord(); // Mostrar la primera palabra al entrar
-                } else if (event.code === 'Digit2') {
-                    mode = 2;
-                    wordCount = 0;
-                    counterElement.textContent = `Palabras: ${wordCount}`;
-                    counterElement.style.display = 'block';
-                    progressBar.style.display = 'block';
-                    wordElement.classList.add('game-mode');
-                    wordElement.style.display = 'block';
-                    menuElement.style.display = 'none';
-                    exitMessage.style.display = 'block';
-                    startTimedMode();
-                }
-            } else if (mode === 1 && event.code === 'Space') {
-                showRandomWord();
-                wordCount++;
-                counterElement.textContent = `Palabras: ${wordCount}`;
-                event.preventDefault();
-            } else if (event.code === 'Escape') {
-                resetGame();
-            }
-        });
+            counterElement.textContent = `Palabras: ${wordCount}`;
+            counterElement.style.display = 'block';
+            progressBar.style.display = 'block';
+            wordElement.classList.add('game-mode');
+            wordElement.style.display = 'block';
+            menuElement.style.display = 'none';
+            exitMessage.style.display = 'block';
+            startTimedMode();
+        }
 
         function showRandomWord() {
             const randomIndex = Math.floor(Math.random() * words.length);
@@ -246,17 +278,14 @@
             const progressBarInner = document.getElementById('progress-bar-inner');
             showRandomWord();
 
-            // Reiniciar la barra de progreso
             progressBarInner.style.transition = "none";
             progressBarInner.style.width = "100%";
 
-            // Iniciar la animación de la barra de progreso
             setTimeout(() => {
                 progressBarInner.style.transition = `width ${currentTime}ms linear`;
                 progressBarInner.style.width = "0%";
             }, 10);
 
-            // Configurar el siguiente ciclo de palabras
             intervalId = setTimeout(() => {
                 wordCount++;
                 document.getElementById('counter').textContent = `Palabras: ${wordCount}`;
@@ -265,23 +294,35 @@
                     currentTime = Math.max(500, currentTime * (1 - decreaseRate)); // No menos de 500 ms
                 }
 
-                startTimedMode(); // Reiniciar el ciclo
+                startTimedMode();
             }, currentTime);
         }
 
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Escape') {
+                resetGame();
+            }
+        });
 
         function resetGame() {
             clearTimeout(intervalId);
-            clearTimeout(timerInterval);
             mode = 0;
             wordCount = 0;
             currentTime = initialTime;
-            document.getElementById('word').classList.remove('game-mode');
-            document.getElementById('word').style.display = 'none';
-            document.getElementById('menu').style.display = 'block';
-            document.getElementById('counter').style.display = 'none';
-            document.getElementById('progress-bar').style.display = 'none';
-            document.getElementById('exit-message').style.display = 'none';
+            const wordElement = document.getElementById('word');
+            const menuElement = document.getElementById('menu');
+            const counterElement = document.getElementById('counter');
+            const progressBar = document.getElementById('progress-bar');
+            const exitMessage = document.getElementById('exit-message');
+
+            wordElement.classList.remove('game-mode');
+            wordElement.style.display = 'none';
+            menuElement.style.display = 'block';
+            counterElement.style.display = 'none';
+            progressBar.style.display = 'none';
+            exitMessage.style.display = 'none';
+
+            document.body.removeEventListener('click', changeWordMode1);
         }
     </script>
 </body>
