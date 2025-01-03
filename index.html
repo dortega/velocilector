@@ -20,18 +20,21 @@
             position: absolute;
             top: 10px;
             left: 10px;
-            width: 50px;
-            height: 50px;
+            width: 133px;
+            height: 100px;
+            cursor: pointer;
         }
         #word {
             font-size: 2em;
             line-height: 1.5;
             transition: font-size 0.3s ease;
             display: none;
+            user-select: none;
         }
         #word.game-mode {
             font-size: 5em;
             display: block;
+            user-select: none;
         }
         #menu {
             padding: 20px;
@@ -78,9 +81,6 @@
             transform: translateX(-50%);
             font-size: 1.5em;
             color: #009B7D;
-            background-color: rgba(0, 155, 125, 0.1);
-            padding: 5px 10px;
-            border-radius: 5px;
             display: none;
         }
         #progress-bar {
@@ -101,18 +101,10 @@
             background-color: #009B7D;
             transition: width linear;
         }
-        #exit-message {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 1em;
-            color: #009B7D;
-        }
     </style>
 </head>
 <body>
-    <img id="logo" src="velocilector.png" alt="Logo del Juego">
+    <img id="logo" src="velocilector.png" alt="Logo del Juego" onclick="resetGame()">
     <div id="menu">
         <div id="menu-title">Presiona 1 o 2 para elegir modo</div>
         <div id="menu-options">
@@ -125,7 +117,6 @@
         <div id="progress-bar-inner"></div>
     </div>
     <div id="word"></div>
-    <div id="exit-message" style="display: none;">Presiona "Esc" para salir del juego.</div>
 
     <script>
         // Lista de las 500 palabras más usadas en español (ejemplo reducido para simplicidad)
@@ -229,14 +220,12 @@
             const wordElement = document.getElementById('word');
             const menuElement = document.getElementById('menu');
             const counterElement = document.getElementById('counter');
-            const exitMessage = document.getElementById('exit-message');
 
             counterElement.textContent = `Palabras: ${wordCount}`;
             counterElement.style.display = 'block';
             wordElement.classList.add('game-mode');
             wordElement.style.display = 'block';
             menuElement.style.display = 'none';
-            exitMessage.style.display = 'block';
             showRandomWord();
 
             document.body.addEventListener('click', changeWordMode1);
@@ -257,7 +246,6 @@
             const menuElement = document.getElementById('menu');
             const counterElement = document.getElementById('counter');
             const progressBar = document.getElementById('progress-bar');
-            const exitMessage = document.getElementById('exit-message');
 
             counterElement.textContent = `Palabras: ${wordCount}`;
             counterElement.style.display = 'block';
@@ -265,7 +253,6 @@
             wordElement.classList.add('game-mode');
             wordElement.style.display = 'block';
             menuElement.style.display = 'none';
-            exitMessage.style.display = 'block';
             startTimedMode();
         }
 
@@ -313,16 +300,12 @@
             const menuElement = document.getElementById('menu');
             const counterElement = document.getElementById('counter');
             const progressBar = document.getElementById('progress-bar');
-            const exitMessage = document.getElementById('exit-message');
 
             wordElement.classList.remove('game-mode');
             wordElement.style.display = 'none';
             menuElement.style.display = 'block';
             counterElement.style.display = 'none';
             progressBar.style.display = 'none';
-            exitMessage.style.display = 'none';
-
-            document.body.removeEventListener('click', changeWordMode1);
         }
     </script>
 </body>
