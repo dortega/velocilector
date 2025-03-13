@@ -237,7 +237,14 @@
     "lockEditing": "Lock editing",
     "unlockEditing": "Unlock editing",
     "unlockEditingTitle": "Unlock editing",
-    "unlockEditingDescription": "Are you sure you want to unlock editing? This will allow editing and deleting players."
+    "unlockEditingDescription": "Are you sure you want to unlock editing? This will allow editing and deleting players.",
+    "readingLevels": {
+      "beginner": "Beginner",
+      "elementary": "Elementary",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced",
+      "expert": "Expert"
+    }
   },
   "edad": "Age",
   "nivelLectura": "Reading level",
@@ -256,5 +263,40 @@
   "games": {
     "startPractice": "Start playing",
     "continuePractice": "Continue playing"
+  },
+  "play": {
+    "settings": "Settings",
+    "gameSetup": "Game Setup",
+    "selectPlayer": "Select a player",
+    "selectLevel": "Select your reading level",
+    "selectGame": "Select a game",
+    "start": "Start",
+    "startGame": "Start game",
+    "startReading": "Start reading",
+    "tapToContinue": "Tap to continue",
+    "noGameSelected": "No game selected",
+    "back": "Back",
+    "backToMenu": "Back to menu",
+    "exit": "Exit game",
+    "speedReading": "Speed Reading",
+    "comprehension": "Reading Comprehension",
+    "question": "Question",
+    "nextQuestion": "Next question",
+    "finishQuiz": "Finish",
+    "results": "Results",
+    "perfectScore": "Perfect score! Excellent comprehension!",
+    "goodScore": "Good job! Keep practicing.",
+    "tryAgain": "Keep practicing to improve your comprehension.",
+    "speedInstructions": {
+      "auto": "Words will change automatically every {speed} seconds.",
+      "manual": "Tap the screen to advance to the next word."
+    },
+    "comprehensionInstructions": "Read the text word by word and then answer the questions.",
+    "games": {
+      "speedReading": "Speed Reading",
+      "speedReadingDesc": "Improve your reading speed with random words",
+      "comprehension": "Reading Comprehension",
+      "comprehensionDesc": "Read texts and answer questions to improve your comprehension"
+    }
   }
 } 
