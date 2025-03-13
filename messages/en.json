@@ -115,6 +115,7 @@
   },
   "platform": {
     "title": "Platform",
+    "language": "Language",
     "nav": {
       "dashboard": "Home",
       "players": "Players",

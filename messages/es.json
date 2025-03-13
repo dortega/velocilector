@@ -115,6 +115,7 @@
   },
   "platform": {
     "title": "Plataforma",
+    "language": "Idioma",
     "nav": {
       "dashboard": "Inicio",
       "players": "Jugadores",
