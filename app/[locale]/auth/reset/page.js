@@ -1,6 +1,15 @@
 'use client';
+import { Suspense } from 'react';
 import AuthForm from '../components/AuthForm';
 
-export default function ResetPage() {
+function ResetContent() {
   return <AuthForm mode="reset" />;
+}
+
+export default function ResetPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResetContent />
+    </Suspense>
+  );
 } 
