@@ -1,10 +1,12 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { supabase } from '@/services/supabase';
-import Image from 'next/image';
 import { avatarService } from '@/services/avatar';
-import PlayerModal from './components/JugadorModal';
+import { playersService } from '@/services/players';
+import PlayerCard from './components/PlayerCard';
+import PlayerModal from './components/PlayerModal';
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
 
 export default function PlayersPage() {
   const t = useTranslations();
@@ -16,15 +18,13 @@ export default function PlayersPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('');
-  const toastRef = useRef(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const toastRef = useRef(null);
+  const [isEditingEnabled, setIsEditingEnabled] = useState(false);
+  const [showUnlockConfirm, setShowUnlockConfirm] = useState(false);
 
-  useEffect(() => {
-    fetchPlayers();
-  }, []);
-
-  // Function to show a toast
-  const showToast = (message, type = 'info') => {
+  // Función para mostrar toast
+  const showToast = useCallback((message, type = 'info') => {
     setToastMessage(message);
     setToastType(type);
     
@@ -38,342 +38,144 @@ export default function PlayersPage() {
         }
       }, 3000);
     }
-  };
+  }, []);
 
-  async function fetchPlayers() {
+  // Función para obtener jugadores
+  const fetchPlayers = useCallback(async () => {
     try {
       setLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error('No active session');
-      }
-      
-      // Usar la nueva tabla "players"
-      const { data, error } = await supabase
-        .from('players')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false });
-        
-      if (error) throw error;
-      
-      console.log("Players fetched:", data);
-      setPlayers(data || []);
+      const data = await playersService.getPlayers();
+      setPlayers(data);
     } catch (error) {
       console.error('Error fetching players:', error);
       showToast(t('errorFetchingData'), 'error');
     } finally {
       setLoading(false);
     }
-  }
+  }, [showToast, t]);
 
+  // Cargar jugadores al montar el componente
+  useEffect(() => {
+    fetchPlayers();
+  }, [fetchPlayers]);
+
+  // Función para abrir el modal de creación
   const handleAddPlayer = () => {
     setCurrentPlayer(null);
     setIsEditing(false);
     setIsModalOpen(true);
   };
 
+  // Función para abrir el modal de edición
   const handleEditPlayer = (player) => {
     setCurrentPlayer(player);
     setIsEditing(true);
     setIsModalOpen(true);
   };
 
-  const handleDeletePlayer = async (player) => {
-    if (window.confirm(t('players.confirmDelete'))) {
-      try {
-        setIsProcessing(true);
-        const { error } = await supabase
-          .from('players') // Usar la nueva tabla
-          .delete()
-          .eq('id', player.id);
-          
-        if (error) throw error;
-        
-        fetchPlayers();
-        showToast(t('players.playerDeleted'), 'success');
-      } catch (error) {
-        console.error('Error deleting player:', error);
-        showToast(t('players.errorDeleting'), 'error');
-      } finally {
-        setIsProcessing(false);
-      }
-    }
-  };
-
+  // Función para guardar un jugador (crear o actualizar)
   const handleSavePlayer = async (playerData) => {
     try {
       console.log("Player data to save:", playerData);
-      setIsProcessing(true); // Bloquear la pantalla mientras se procesa
-      
-      // El modal ya se ha cerrado en este punto
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error('No active session');
-      }
-      
-      // Convert reading_level from text to number
-      let readingLevelNumeric;
-      switch (playerData.reading_level) {
-        case 'principiante':
-          readingLevelNumeric = 2;
-          break;
-        case 'elemental':
-          readingLevelNumeric = 4;
-          break;
-        case 'intermedio':
-          readingLevelNumeric = 6;
-          break;
-        case 'avanzado':
-          readingLevelNumeric = 8;
-          break;
-        case 'experto':
-          readingLevelNumeric = 10;
-          break;
-        default:
-          readingLevelNumeric = 5; // Default value
-      }
-      
-      // Create object with processed data using the new field names
-      const processedPlayer = {
-        name: playerData.name,
-        age: playerData.age,
-        reading_level: readingLevelNumeric,
-        gender: playerData.gender,
-        hair_color: playerData.hair_color,
-        hair_style: playerData.hair_style,
-        skin_tone: playerData.skin_tone,
-        eye_color: playerData.eye_color,
-        user_id: session.user.id
-      };
-      
-      console.log("Processed data to save:", processedPlayer);
+      setIsProcessing(true);
       
       let savedPlayer;
       
-      if (isEditing && playerData.id) {
-        console.log("Edit mode - Updating existing player");
-        // Update existing player
-        const { data, error } = await supabase
-          .from('players')
-          .update(processedPlayer)
-          .eq('id', playerData.id)
-          .select();
-          
-        if (error) {
-          console.error("Supabase error when updating:", error);
-          throw error;
-        }
-        
-        savedPlayer = data[0];
-        console.log("Player updated:", savedPlayer);
-        
-        // If physical characteristics were updated, regenerate the avatar
-        const characteristicsChanged = 
-          playerData.gender !== currentPlayer.gender ||
-          playerData.hair_color !== currentPlayer.hair_color ||
-          playerData.hair_style !== currentPlayer.hair_style ||
-          playerData.skin_tone !== currentPlayer.skin_tone ||
-          playerData.eye_color !== currentPlayer.eye_color;
-        
-        if (characteristicsChanged) {
-          console.log("Physical characteristics changed, regenerating avatar...");
-          await generateAvatarForPlayer(savedPlayer);
-        }
-        
+      if (isEditing) {
+        // Actualizar jugador existente
+        savedPlayer = await playersService.updatePlayer(playerData.id, playerData);
         showToast(t('players.playerUpdated'), 'success');
       } else {
-        console.log("Create mode - Adding new player");
-        // Add new player
-        const { data, error } = await supabase
-          .from('players')
-          .insert([processedPlayer])
-          .select();
-          
-        if (error) {
-          console.error("Supabase error when inserting:", error);
-          throw error;
+        // Crear nuevo jugador
+        savedPlayer = await playersService.createPlayer(playerData);
+        showToast(t('players.playerCreated'), 'success');
+        
+        // Generar avatar para el nuevo jugador
+        try {
+          const { url } = await avatarService.regenerateAndSaveAvatar(savedPlayer);
+          savedPlayer.avatar_url = url;
+        } catch (avatarError) {
+          console.error('Error generating initial avatar:', avatarError);
+          // No mostramos error aquí, el jugador se creó correctamente
         }
-        
-        savedPlayer = data[0];
-        console.log("Player added:", savedPlayer);
-        
-        // Generate avatar for the new player
-        console.log("Generating avatar for new player...");
-        await generateAvatarForPlayer(savedPlayer);
-        
-        showToast(t('players.playerAdded'), 'success');
       }
       
-      // Close the modal and update the list
-      setIsModalOpen(false);
-      fetchPlayers();
+      // Actualizar la lista de jugadores
+      await fetchPlayers();
+      
     } catch (error) {
       console.error('Error saving player:', error);
       showToast(t('players.errorSaving'), 'error');
     } finally {
-      setIsProcessing(false); // Desbloquear la pantalla
+      setIsProcessing(false);
     }
   };
 
-  // Function to generate avatar for a player
-  const generateAvatarForPlayer = async (player) => {
+  // Función para eliminar un jugador
+  const handleDeletePlayer = async (player) => {
     try {
-      console.log("Calling avatarService.generateAvatar with:", player);
-      
-      // Show a loading toast
-      showToast(t('players.generatingAvatar'), 'info');
-      
-      // Call the service to generate a new avatar
-      const { url } = await avatarService.generateAvatar(player);
-      
-      console.log("Generated avatar URL:", url);
-      
-      if (!url) {
-        throw new Error("No avatar URL received");
+      if (!confirm(t('players.confirmDelete'))) {
+        return;
       }
       
-      // Update the player with the new avatar URL
-      const { error } = await supabase
-        .from('players')
-        .update({ avatar_url: url })
-        .eq('id', player.id);
-        
-      if (error) {
-        console.error("Error updating avatar URL:", error);
-        throw error;
-      }
+      setIsProcessing(true);
+      await playersService.deletePlayer(player.id);
       
-      console.log("Avatar updated in database");
-      return url;
+      // Actualizar la lista de jugadores
+      setPlayers(players.filter(p => p.id !== player.id));
+      showToast(t('players.playerDeleted'), 'success');
     } catch (error) {
-      console.error('Error generating avatar:', error);
-      showToast(t('players.errorRegeneratingAvatar'), 'warning');
-      return null;
+      console.error('Error deleting player:', error);
+      showToast(t('players.errorDeleting'), 'error');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
+  // Función para regenerar el avatar de un jugador
   const handleRegenerateAvatar = async (player) => {
     try {
       setIsProcessing(true);
-      // Mark this player as being regenerated
+      // Marcar este jugador como en regeneración
       setRegeneratingAvatars(prev => ({ ...prev, [player.id]: true }));
       
       showToast(t('players.generatingAvatar'), 'info');
       
-      // Call the service to generate a new avatar
-      const { url } = await avatarService.generateAvatar(player);
+      // Llamar al servicio para regenerar y guardar el avatar
+      const { url, updatedPlayer } = await avatarService.regenerateAndSaveAvatar(player);
       
-      // Update the player with the new avatar URL
-      const { error } = await supabase
-        .from('players')
-        .update({ avatar_url: url })
-        .eq('id', player.id);
-        
-      if (error) throw error;
-      
-      // Update only this player in the local state
+      // Actualizar solo este jugador en el estado local
       setPlayers(prevPlayers => 
         prevPlayers.map(p => 
           p.id === player.id ? { ...p, avatar_url: url } : p
         )
       );
       
-      // Show a success toast
+      // Mostrar un toast de éxito
       showToast(t('players.avatarRegenerated'), 'success');
     } catch (error) {
       console.error('Error regenerating avatar:', error);
       showToast(t('players.errorRegeneratingAvatar'), 'error');
     } finally {
-      // Unmark this player as being regenerated
+      // Desmarcar este jugador como en regeneración
       setRegeneratingAvatars(prev => ({ ...prev, [player.id]: false }));
       setIsProcessing(false);
     }
   };
 
-  // Player card component with specific loading indicator
-  const PlayerCard = ({ player, onEdit, onDelete, onRegenerateAvatar }) => {
-    const isRegenerating = regeneratingAvatars[player.id];
-    
-    return (
-      <div className="card bg-base-100 shadow-xl h-full">
-        <figure className="relative pt-4 px-4 pb-0">
-          {player.avatar_url ? (
-            <div className="w-full aspect-square rounded-xl overflow-hidden relative group">
-              {isRegenerating ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-base-200 bg-opacity-70 z-20">
-                  <span className="loading loading-spinner loading-md"></span>
-                </div>
-              ) : null}
-              <Image
-                src={player.avatar_url}
-                alt={player.name}
-                width={300}
-                height={300}
-                className="w-full h-full object-cover"
-                onClick={() => onEdit(player)}
-                style={{ cursor: 'pointer' }}
-              />
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRegenerateAvatar(player);
-                }}
-                className="absolute bottom-2 right-2 btn btn-circle btn-sm bg-base-100 bg-opacity-70 hover:bg-opacity-100 text-primary border-none shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                title={t('players.regenerateAvatar')}
-                disabled={isRegenerating || isProcessing}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                </svg>
-              </button>
-            </div>
-          ) : (
-            <div className="w-full aspect-square rounded-xl bg-base-200 flex items-center justify-center">
-              {isRegenerating ? (
-                <span className="loading loading-spinner loading-lg"></span>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16 text-base-content opacity-20">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                </svg>
-              )}
-            </div>
-          )}
-        </figure>
-        <div className="card-body">
-          <h2 className="card-title">{player.name}</h2>
-          <div className="flex flex-col gap-1 text-sm">
-            <p>
-              <span className="font-semibold">{t('players.age')}:</span>{' '}
-              {player.age || t('noEspecificada')}
-            </p>
-            <p>
-              <span className="font-semibold">{t('players.readingLevel')}:</span>{' '}
-              {player.reading_level || t('noEspecificada')}
-            </p>
-          </div>
-          <div className="card-actions justify-end mt-2">
-            <button
-              className="btn btn-sm btn-outline"
-              onClick={() => onEdit(player)}
-              disabled={isRegenerating || isProcessing}
-            >
-              {t('players.edit')}
-            </button>
-            <button
-              className="btn btn-sm btn-error btn-outline"
-              onClick={() => onDelete(player)}
-              disabled={isRegenerating || isProcessing}
-            >
-              {t('players.delete')}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+  // Función para manejar el toggle del candado
+  const handleToggleEditLock = () => {
+    if (!isEditingEnabled) {
+      setShowUnlockConfirm(true);
+    } else {
+      setIsEditingEnabled(false);
+    }
+  };
+
+  // Función para confirmar el desbloqueo
+  const confirmUnlock = () => {
+    setIsEditingEnabled(true);
+    setShowUnlockConfirm(false);
   };
 
   return (
@@ -388,62 +190,76 @@ export default function PlayersPage() {
         </div>
       )}
       
-      {/* DaisyUI Toast */}
-      <div className="toast toast-top toast-end z-50">
-        <div 
-          ref={toastRef}
-          className={`alert ${
-            toastType === 'success' ? 'alert-success' : 
-            toastType === 'error' ? 'alert-error' : 
-            toastType === 'warning' ? 'alert-warning' : 
-            'alert-info'
-          } hidden`}
-        >
+      {/* Toast para mensajes */}
+      <div 
+        ref={toastRef}
+        className={`toast toast-top toast-center z-50 hidden transition-all duration-300 ${
+          toastType === 'error' ? 'alert-error' : 
+          toastType === 'success' ? 'alert-success' : 
+          toastType === 'warning' ? 'alert-warning' : 'bg-green-100 text-green-800'
+        }`}
+      >
+        <div className="alert">
           <span>{toastMessage}</span>
         </div>
       </div>
       
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">{t('players.title')}</h1>
-        <button
-          className="btn btn-primary"
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold">{t('players.title')}</h1>
+          <button 
+            onClick={handleToggleEditLock}
+            className={`btn btn-circle btn-sm ${isEditingEnabled ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500 hover:bg-gray-600'} text-white border-none`}
+            aria-label={isEditingEnabled ? t('players.lockEditing') : t('players.unlockEditing')}
+          >
+            {isEditingEnabled ? <LockOpenIcon fontSize="small" /> : <LockIcon fontSize="small" />}
+          </button>
+        </div>
+        <button 
+          className="btn bg-green-500 hover:bg-green-600 text-white border-none"
           onClick={handleAddPlayer}
-          disabled={loading}
+          disabled={isProcessing}
         >
-          {t('players.addNew')}
+          {t('players.addPlayer')}
         </button>
       </div>
       
-      {loading && players.length === 0 ? (
+      {loading ? (
         <div className="flex justify-center items-center h-64">
           <span className="loading loading-spinner loading-lg"></span>
         </div>
+      ) : players.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16 mx-auto text-base-content opacity-20">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold mb-2">{t('players.noPlayersYet')}</h2>
+          <p className="text-base-content opacity-70 mb-6">{t('players.createYourFirstPlayer')}</p>
+          <button 
+            className="btn bg-green-500 hover:bg-green-600 text-white border-none"
+            onClick={handleAddPlayer}
+            disabled={isProcessing}
+          >
+            {t('players.addPlayer')}
+          </button>
+        </div>
       ) : (
-        <>
-          {players.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {players.map((player) => (
-                <PlayerCard
-                  key={player.id}
-                  player={player}
-                  onEdit={handleEditPlayer}
-                  onDelete={handleDeletePlayer}
-                  onRegenerateAvatar={handleRegenerateAvatar}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-10">
-              <p className="text-lg mb-4">{t('players.noPlayersYet')}</p>
-              <button
-                className="btn btn-primary"
-                onClick={handleAddPlayer}
-              >
-                {t('players.addFirst')}
-              </button>
-            </div>
-          )}
-        </>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {players.map(player => (
+            <PlayerCard
+              key={player.id}
+              player={player}
+              onEdit={handleEditPlayer}
+              onDelete={handleDeletePlayer}
+              onRegenerateAvatar={handleRegenerateAvatar}
+              isRegenerating={regeneratingAvatars[player.id]}
+              isProcessing={isProcessing}
+              isEditingEnabled={isEditingEnabled}
+            />
+          ))}
+        </div>
       )}
       
       {/* Player modal */}
@@ -454,6 +270,30 @@ export default function PlayersPage() {
         player={currentPlayer}
         isEditing={isEditing}
       />
+      
+      {/* Modal de confirmación para desbloquear edición */}
+      {showUnlockConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-base-100 p-6 rounded-lg shadow-xl max-w-md w-full">
+            <h3 className="font-bold text-lg mb-4 text-green-600">{t('players.confirmUnlock')}</h3>
+            <p className="mb-6">{t('players.unlockWarning')}</p>
+            <div className="flex justify-end gap-2">
+              <button 
+                className="btn btn-outline" 
+                onClick={() => setShowUnlockConfirm(false)}
+              >
+                {t('cancel')}
+              </button>
+              <button 
+                className="btn bg-green-500 hover:bg-green-600 text-white border-none" 
+                onClick={confirmUnlock}
+              >
+                {t('confirm')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

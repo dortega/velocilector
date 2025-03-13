@@ -80,8 +80,11 @@ export async function GET(request) {
       illustrationStyle = "in a teen-oriented animation style similar to The Dragon Prince or Arcane, with more realistic proportions while maintaining a stylized look";
     }
     
-    // Generar el prompt para la imagen
-    const prompt = `A portrait of a ${genderTerm} who is ${age} years old with ${hairColor} hair ${hairStyleDescription}, ${eyeColorMap[eyeColor] || eyeColor} eyes, and ${skinToneMap[skinTone] || skinTone} skin, with a happy and friendly expression, ${illustrationStyle}. The character should be centered, with a simple colorful background, looking straight ahead. Only show the head and shoulders.`;
+    // Instrucciones específicas para evitar múltiples personajes
+    const specificInstructions = "The image must show ONLY ONE character, centered in the frame. Head and shoulders portrait only. Simple colorful background. The character must be facing forward with clear facial features.";
+    
+    // Generar el prompt para la imagen con instrucciones mejoradas
+    const prompt = `A single portrait of an individual person ${genderTerm} who is ${age} years old with ${hairColor} hair ${hairStyleDescription}, ${eyeColorMap[eyeColor] || eyeColor} eyes, and ${skinToneMap[skinTone] || skinTone} skin, with a happy and friendly expression, ${illustrationStyle}. ${specificInstructions}`;
     
     console.log('Generated prompt:', prompt);
     

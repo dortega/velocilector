@@ -216,7 +216,16 @@
     "next": "Siguiente",
     "back": "Atrás",
     "edit": "Editar",
-    "delete": "Eliminar"
+    "delete": "Eliminar",
+    "createPlayer": "Crear jugador",
+    "selectReadingLevel": "Selecciona el nivel de lectura",
+    "processing": "Procesando...",
+    "enterName": "Introduce el nombre",
+    "enterAge": "Introduce la edad",
+    "lockEditing": "Bloquear edición",
+    "unlockEditing": "Desbloquear edición",
+    "confirmUnlock": "Confirmar desbloqueo",
+    "unlockWarning": "¿Estás seguro que quieres desbloquear la edición? Esto permitirá editar y eliminar jugadores."
   },
   "edad": "Edad",
   "nivelLectura": "Nivel de lectura",
@@ -226,5 +235,6 @@
   "save": "Guardar",
   "cancel": "Cancelar",
   "create": "Crear",
-  "errorFetchingData": "Error al cargar los datos"
+  "errorFetchingData": "Error al cargar los datos",
+  "confirm": "Confirmar"
 } 

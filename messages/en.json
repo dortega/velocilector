@@ -167,12 +167,21 @@
     "generatingAvatar": "Generating new avatar...",
     "avatarRegenerated": "Avatar successfully regenerated!",
     "errorRegeneratingAvatar": "Error regenerating avatar",
-    "basicInfo": "Basic info",
+    "basicInfo": "Basic information",
     "appearance": "Appearance",
     "next": "Next",
     "back": "Back",
     "edit": "Edit",
-    "delete": "Delete"
+    "delete": "Delete",
+    "createPlayer": "Create player",
+    "selectReadingLevel": "Select reading level",
+    "processing": "Processing...",
+    "enterName": "Enter name",
+    "enterAge": "Enter age",
+    "lockEditing": "Lock editing",
+    "unlockEditing": "Unlock editing",
+    "confirmUnlock": "Confirm unlock",
+    "unlockWarning": "Are you sure you want to unlock editing? This will allow editing and deleting players."
   },
   "edad": "Age",
   "nivelLectura": "Reading level",
@@ -182,5 +191,6 @@
   "save": "Save",
   "cancel": "Cancel",
   "create": "Create",
-  "errorFetchingData": "Error loading data"
+  "errorFetchingData": "Error loading data",
+  "confirm": "Confirm"
 } 
