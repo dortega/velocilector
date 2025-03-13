@@ -1,0 +1,230 @@
+{
+  "index": {
+    "title": "Bienvenido a Velocilector",
+    "description": "Tu plataforma de lectura rápida",
+    "hero": {
+      "title": "Velocilector",
+      "subtitle": "Domina la lectura rápida con la precisión de un velociraptor",
+      "cta": "Comienza a leer más rápido"
+    },
+    "explanation": {
+      "title": "¿Qué es Velocilector?",
+      "description": "Velocilector es una aplicación innovadora que combina técnicas avanzadas de lectura rápida con tecnología moderna para ayudarte a mejorar tu velocidad de lectura mientras mantienes una excelente comprensión del texto."
+    },
+    "benefits": {
+      "title": "Beneficios",
+      "speed": {
+        "title": "Velocidad Increíble",
+        "description": "Aumenta tu velocidad de lectura hasta 3 veces más rápido que tu velocidad actual"
+      },
+      "comprehension": {
+        "title": "Mejor Comprensión",
+        "description": "Mantén y mejora tu nivel de comprensión mientras aumentas tu velocidad"
+      },
+      "tracking": {
+        "title": "Seguimiento Detallado",
+        "description": "Monitorea tu progreso con estadísticas detalladas y visualizaciones claras"
+      }
+    },
+    "pricing": {
+      "title": "Planes y Precios",
+      "subtitle": "Elige el plan que mejor se adapte a tus necesidades",
+      "free": {
+        "title": "Free",
+        "price": "0€",
+        "period": "/mes",
+        "feature1": "100 palabras más comunes",
+        "feature2": "Acceso a ejercicios básicos",
+        "feature3": "Seguimiento de progreso",
+        "feature4": "Disponible en todos los idiomas",
+        "cta": "Empezar gratis"
+      },
+      "pro": {
+        "title": "Pro",
+        "price": "5€",
+        "period": "/mes",
+        "feature1": "500 palabras más comunes",
+        "feature2": "Ejercicios intermedios",
+        "feature3": "Estadísticas detalladas",
+        "feature4": "Soporte por email",
+        "cta": "Elegir plan",
+        "highlight": "Más popular"
+      },
+      "premium": {
+        "title": "Premium",
+        "price": "10€",
+        "period": "/mes",
+        "feature1": "Textos completos",
+        "feature2": "Ejercicios avanzados",
+        "feature3": "Análisis personalizado",
+        "feature4": "Soporte prioritario",
+        "cta": "Elegir plan"
+      }
+    },
+    "cta": {
+      "title": "¡Comienza tu viaje hacia la lectura rápida!",
+      "subtitle": "Únete a miles de lectores que ya han mejorado su velocidad de lectura",
+      "button": "¡Regístrate ahora!"
+    },
+    "footer": {
+      "rights": "Todos los derechos reservados."
+    }
+  },
+  "nav": {
+    "home": "Inicio",
+    "about": "Acerca de",
+    "contact": "Contacto",
+    "benefits": "Beneficios",
+    "login": "Iniciar sesión",
+    "progress": "Mi Progreso",
+    "play": "Practicar",
+    "profile": "Perfil",
+    "logout": "Cerrar sesión",
+    "dashboard": "Dashboard"
+  },
+  "auth": {
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "loading": "Cargando...",
+    "verifyEmail": "Por favor, verifica tu correo electrónico para continuar",
+    "resetEmailSent": "Se ha enviado un correo para restablecer tu contraseña",
+    "login": {
+      "title": "Iniciar sesión",
+      "action": "Iniciar sesión",
+      "register": "¿No tienes cuenta? Regístrate",
+      "forgot": "¿Olvidaste tu contraseña?"
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "action": "Registrarse",
+      "login": "¿Ya tienes cuenta? Inicia sesión"
+    },
+    "reset": {
+      "title": "Restablecer contraseña",
+      "action": "Enviar correo de recuperación",
+      "back": "Volver al inicio de sesión"
+    },
+    "verifyEmailTitle": "Verifica tu correo electrónico",
+    "resetEmailTitle": "Correo enviado",
+    "verifiedEmailTitle": "¡Email verificado!",
+    "verifiedEmail": "Gracias por verificar tu email. Ya puedes iniciar sesión con tu cuenta.",
+    "modal": {
+      "understand": "Entendido",
+      "login": "Iniciar sesión"
+    }
+  },
+  "platform": {
+    "nav": {
+      "progress": "Mi Progreso",
+      "play": "Practicar",
+      "profile": "Perfil",
+      "logout": "Cerrar sesión",
+      "dashboard": "Dashboard",
+      "jugadores": "Jugadores"
+    },
+    "progress": {
+      "title": "Mi Progreso",
+      "empty": "Aún no hay datos de progreso disponibles. ¡Comienza a practicar!"
+    },
+    "profile": {
+      "title": "Mi Perfil",
+      "email": "Correo electrónico",
+      "memberSince": "Miembro desde",
+      "lastLogin": "Último inicio de sesión",
+      "userId": "ID de usuario",
+      "noUserData": "No se pudo cargar la información del usuario",
+      "close": "Cerrar"
+    },
+    "language": {
+      "select": "Seleccionar idioma"
+    }
+  },
+  "players": {
+    "title": "Jugadores",
+    "addNew": "Añadir jugador",
+    "addPlayer": "Añadir jugador",
+    "editPlayer": "Editar jugador",
+    "addFirst": "Añadir primer jugador",
+    "noPlayersYet": "Aún no tienes jugadores",
+    "name": "Nombre",
+    "age": "Edad",
+    "readingLevel": "Nivel de lectura",
+    "gender": "Género",
+    "boy": "Chico",
+    "girl": "Chica",
+    "hairColor": "Color de pelo",
+    "hairStyle": "Estilo de pelo",
+    "skinTone": "Tono de piel",
+    "eyeColor": "Color de ojos",
+    "selectLevel": "Selecciona nivel",
+    "selectGender": "Selecciona género",
+    "selectHairColor": "Selecciona color de pelo",
+    "selectHairStyle": "Selecciona estilo de pelo",
+    "selectEyeColor": "Selecciona color de ojos",
+    "selectSkinTone": "Selecciona tono de piel",
+    "beginner": "Principiante",
+    "elementary": "Elemental",
+    "intermediate": "Intermedio",
+    "advanced": "Avanzado",
+    "expert": "Experto",
+    "male": "Masculino",
+    "female": "Femenino",
+    "hairBlonde": "Rubio",
+    "hairDarkBrown": "Castaño oscuro",
+    "hairLightBrown": "Castaño claro",
+    "hairRed": "Pelirrojo",
+    "hairBlack": "Negro",
+    "hairGray": "Gris",
+    "hairWhite": "Blanco",
+    "hairBlue": "Azul",
+    "hairGreen": "Verde",
+    "hairPink": "Rosa",
+    "hairPurple": "Morado",
+    "hairShort": "Corto",
+    "hairMedium": "Medio",
+    "hairLong": "Largo",
+    "hairPonytail": "Cola de caballo",
+    "hairPigtails": "Coletas",
+    "hairBraid": "Trenza",
+    "hairBald": "Calvo",
+    "hairBuzzcut": "Rapado",
+    "eyeBlue": "Azul",
+    "eyeGreen": "Verde",
+    "eyeBrown": "Marrón",
+    "eyeHazel": "Avellana",
+    "eyeGray": "Gris",
+    "eyeAmber": "Ámbar",
+    "eyeBlack": "Negro",
+    "skinVeryLight": "Muy claro",
+    "skinLight": "Claro",
+    "skinMedium": "Medio",
+    "skinTan": "Bronceado",
+    "skinDark": "Oscuro",
+    "skinVeryDark": "Muy oscuro",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar este jugador?",
+    "playerDeleted": "Jugador eliminado correctamente",
+    "playerAdded": "Jugador añadido correctamente",
+    "playerUpdated": "Jugador actualizado correctamente",
+    "errorDeleting": "Error al eliminar el jugador",
+    "errorSaving": "Error al guardar el jugador",
+    "regenerateAvatar": "Regenerar avatar",
+    "generatingAvatar": "Generando nuevo avatar...",
+    "avatarRegenerated": "¡Avatar regenerado con éxito!",
+    "errorRegeneratingAvatar": "Error al regenerar el avatar",
+    "basicInfo": "Información básica",
+    "appearance": "Apariencia",
+    "next": "Siguiente",
+    "back": "Atrás",
+    "edit": "Editar",
+    "delete": "Eliminar"
+  },
+  "edad": "Edad",
+  "nivelLectura": "Nivel de lectura",
+  "noEspecificada": "No especificada",
+  "edit": "Editar",
+  "delete": "Eliminar",
+  "save": "Guardar",
+  "cancel": "Cancelar",
+  "create": "Crear",
+  "errorFetchingData": "Error al cargar los datos"
+} 

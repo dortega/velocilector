@@ -1,0 +1,186 @@
+{
+  "index": {
+    "title": "Welcome to Velocilector",
+    "description": "Your speed reading platform",
+    "hero": {
+      "title": "Velocilector",
+      "subtitle": "Master speed reading with raptor-like precision",
+      "cta": "Start reading faster"
+    },
+    "explanation": {
+      "title": "What is Velocilector?",
+      "description": "Velocilector is an innovative application that combines advanced speed reading techniques with modern technology to help you improve your reading speed while maintaining excellent text comprehension."
+    },
+    "benefits": {
+      "title": "Benefits",
+      "speed": {
+        "title": "Incredible Speed",
+        "description": "Increase your reading speed up to 3 times faster than your current speed"
+      },
+      "comprehension": {
+        "title": "Better Comprehension",
+        "description": "Maintain and improve your comprehension level while increasing your speed"
+      },
+      "tracking": {
+        "title": "Detailed Tracking",
+        "description": "Monitor your progress with detailed statistics and clear visualizations"
+      }
+    },
+    "footer": {
+      "rights": "All rights reserved."
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "contact": "Contact",
+    "benefits": "Benefits",
+    "login": "Login",
+    "dashboard": "Dashboard"
+  },
+  "auth": {
+    "email": "Email address",
+    "password": "Password",
+    "loading": "Loading...",
+    "verifyEmail": "Please check your email to verify your account",
+    "resetEmailSent": "Password reset email has been sent",
+    "login": {
+      "title": "Sign in to your account",
+      "action": "Sign in",
+      "register": "Don't have an account? Sign up",
+      "forgot": "Forgot your password?"
+    },
+    "register": {
+      "title": "Create your account",
+      "action": "Sign up",
+      "login": "Already have an account? Sign in"
+    },
+    "reset": {
+      "title": "Reset your password",
+      "action": "Send reset email",
+      "back": "Back to sign in"
+    },
+    "verifyEmailTitle": "Verify your email",
+    "resetEmailTitle": "Email sent",
+    "verifiedEmailTitle": "Email verified!",
+    "verifiedEmail": "Thank you for verifying your email. You can now log in to your account.",
+    "modal": {
+      "understand": "Got it",
+      "login": "Sign in"
+    }
+  },
+  "platform": {
+    "nav": {
+      "progress": "My Progress",
+      "play": "Practice",
+      "profile": "Profile",
+      "logout": "Sign out",
+      "dashboard": "Dashboard",
+      "jugadores": "Players"
+    },
+    "progress": {
+      "title": "My Progress",
+      "empty": "No progress data available yet. Start practicing!"
+    },
+    "profile": {
+      "title": "My Profile",
+      "email": "Email address",
+      "memberSince": "Member since",
+      "lastLogin": "Last login",
+      "userId": "User ID",
+      "noUserData": "Could not load user data",
+      "close": "Close"
+    },
+    "language": {
+      "select": "Select language"
+    }
+  },
+  "players": {
+    "title": "Players",
+    "addNew": "Add player",
+    "addPlayer": "Add player",
+    "editPlayer": "Edit player",
+    "addFirst": "Add first player",
+    "noPlayersYet": "You don't have any players yet",
+    "name": "Name",
+    "age": "Age",
+    "readingLevel": "Reading level",
+    "gender": "Gender",
+    "boy": "Boy",
+    "girl": "Girl",
+    "hairColor": "Hair color",
+    "hairStyle": "Hair style",
+    "skinTone": "Skin tone",
+    "eyeColor": "Eye color",
+    "selectLevel": "Select level",
+    "selectGender": "Select gender",
+    "selectHairColor": "Select hair color",
+    "selectHairStyle": "Select hair style",
+    "selectEyeColor": "Select eye color",
+    "selectSkinTone": "Select skin tone",
+    "beginner": "Beginner",
+    "elementary": "Elementary",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "expert": "Expert",
+    "male": "Male",
+    "female": "Female",
+    "hairBlonde": "Blonde",
+    "hairDarkBrown": "Dark brown",
+    "hairLightBrown": "Light brown",
+    "hairRed": "Red",
+    "hairBlack": "Black",
+    "hairGray": "Gray",
+    "hairWhite": "White",
+    "hairBlue": "Blue",
+    "hairGreen": "Green",
+    "hairPink": "Pink",
+    "hairPurple": "Purple",
+    "hairShort": "Short",
+    "hairMedium": "Medium",
+    "hairLong": "Long",
+    "hairPonytail": "Ponytail",
+    "hairPigtails": "Pigtails",
+    "hairBraid": "Braid",
+    "hairBald": "Bald",
+    "hairBuzzcut": "Buzzcut",
+    "eyeBlue": "Blue",
+    "eyeGreen": "Green",
+    "eyeBrown": "Brown",
+    "eyeHazel": "Hazel",
+    "eyeGray": "Gray",
+    "eyeAmber": "Amber",
+    "eyeBlack": "Black",
+    "skinVeryLight": "Very light",
+    "skinLight": "Light",
+    "skinMedium": "Medium",
+    "skinTan": "Tan",
+    "skinDark": "Dark",
+    "skinVeryDark": "Very dark",
+    "confirmDelete": "Are you sure you want to delete this player?",
+    "playerDeleted": "Player successfully deleted",
+    "playerAdded": "Player successfully added",
+    "playerUpdated": "Player successfully updated",
+    "errorDeleting": "Error deleting player",
+    "errorSaving": "Error saving player",
+    "regenerateAvatar": "Regenerate avatar",
+    "generatingAvatar": "Generating new avatar...",
+    "avatarRegenerated": "Avatar successfully regenerated!",
+    "errorRegeneratingAvatar": "Error regenerating avatar",
+    "basicInfo": "Basic info",
+    "appearance": "Appearance",
+    "next": "Next",
+    "back": "Back",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "edad": "Age",
+  "nivelLectura": "Reading level",
+  "noEspecificada": "Not specified",
+  "edit": "Edit",
+  "delete": "Delete",
+  "save": "Save",
+  "cancel": "Cancel",
+  "create": "Create",
+  "errorFetchingData": "Error loading data"
+} 
