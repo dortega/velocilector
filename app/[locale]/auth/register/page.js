@@ -1,6 +1,15 @@
 'use client';
+import { Suspense } from 'react';
 import AuthForm from '../components/AuthForm';
 
-export default function RegisterPage() {
+function RegisterContent() {
   return <AuthForm mode="register" />;
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RegisterContent />
+    </Suspense>
+  );
 } 

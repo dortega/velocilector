@@ -9,7 +9,7 @@ const openai = new OpenAI({
 
 // Configuración de Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWt4eWJwZ2tsZWx4c3BzcWFjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MTg0NDE4MiwiZXhwIjoyMDU3NDIwMTgyfQ.hrrHSkBrcbnnEsVQ7IioKhx7gIxUvqC_L4lpCDO7B1Q'; //process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // Constantes para el almacenamiento
@@ -80,8 +80,11 @@ export async function GET(request) {
       illustrationStyle = "in a teen-oriented animation style similar to The Dragon Prince or Arcane, with more realistic proportions while maintaining a stylized look";
     }
     
-    // Generar el prompt para la imagen
-    const prompt = `A portrait of a ${genderTerm} who is ${age} years old with ${hairColor} hair ${hairStyleDescription}, ${eyeColorMap[eyeColor] || eyeColor} eyes, and ${skinToneMap[skinTone] || skinTone} skin, with a happy and friendly expression, ${illustrationStyle}. The character should be centered, with a simple colorful background, looking straight ahead. Only show the head and shoulders.`;
+    // Instrucciones específicas para evitar múltiples personajes
+    const specificInstructions = "The image must show ONLY ONE character, centered in the frame. Head and shoulders portrait only. Simple colorful background. The character must be facing forward with clear facial features.";
+    
+    // Generar el prompt para la imagen con instrucciones mejoradas
+    const prompt = `A single portrait of an individual person ${genderTerm} who is ${age} years old with ${hairColor} hair ${hairStyleDescription}, ${eyeColorMap[eyeColor] || eyeColor} eyes, and ${skinToneMap[skinTone] || skinTone} skin, with a happy and friendly expression, ${illustrationStyle}. ${specificInstructions}`;
     
     console.log('Generated prompt:', prompt);
     

@@ -156,24 +156,24 @@ export default function AuthForm({ mode = 'login' }) {
           <div className="text-sm text-center space-y-2">
             {mode === 'login' && (
               <>
-                <a href="/auth/register" className="text-green-600 hover:text-green-500">
+                <Link href="/auth/register/" className="text-green-600 hover:text-green-500">
                   {t('login.register')}
-                </a>
+                </Link>
                 <br />
-                <a href="/auth/reset" className="text-green-600 hover:text-green-500">
+                <Link href="/auth/reset/" className="text-green-600 hover:text-green-500">
                   {t('login.forgot')}
-                </a>
+                </Link>
               </>
             )}
             {mode === 'register' && (
-              <a href="/auth/login" className="text-green-600 hover:text-green-500">
+              <Link href="/auth/login/" className="text-green-600 hover:text-green-500">
                 {t('register.login')}
-              </a>
+              </Link>
             )}
             {mode === 'reset' && (
-              <a href="/auth/login" className="text-green-600 hover:text-green-500">
+              <Link href="/auth/login/" className="text-green-600 hover:text-green-500">
                 {t('reset.back')}
-              </a>
+              </Link>
             )}
           </div>
         </div>

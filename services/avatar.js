@@ -41,5 +41,35 @@ export const avatarService = {
       console.error("Error in avatarService.generateAvatar:", error);
       throw error;
     }
+  },
+  
+  regenerateAndSaveAvatar: async (player) => {
+    try {
+      // Generar el avatar
+      const { url } = await avatarService.generateAvatar(player);
+      
+      if (!url) {
+        throw new Error("No avatar URL received");
+      }
+      
+      // Actualizar el jugador con la nueva URL del avatar
+      const { data, error } = await supabase
+        .from('players')
+        .update({ avatar_url: url })
+        .eq('id', player.id)
+        .select();
+        
+      if (error) {
+        throw error;
+      }
+      
+      return { 
+        url, 
+        updatedPlayer: data[0] 
+      };
+    } catch (error) {
+      console.error("Error regenerating and saving avatar:", error);
+      throw error;
+    }
   }
 }; 

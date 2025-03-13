@@ -4,7 +4,7 @@
     "description": "Your speed reading platform",
     "hero": {
       "title": "Velocilector",
-      "subtitle": "Master speed reading with raptor-like precision",
+      "subtitle": "Master speed reading with the precision of a velociraptor",
       "cta": "Start reading faster"
     },
     "explanation": {
@@ -26,6 +26,46 @@
         "description": "Monitor your progress with detailed statistics and clear visualizations"
       }
     },
+    "pricing": {
+      "title": "Plans and Pricing",
+      "subtitle": "Choose the plan that best suits your needs",
+      "free": {
+        "title": "Free",
+        "price": "€0",
+        "period": "/month",
+        "feature1": "100 most common words",
+        "feature2": "Access to basic exercises",
+        "feature3": "Progress tracking",
+        "feature4": "Available in all languages",
+        "cta": "Start for free"
+      },
+      "pro": {
+        "title": "Pro",
+        "price": "€5",
+        "period": "/month",
+        "feature1": "500 most common words",
+        "feature2": "Intermediate exercises",
+        "feature3": "Detailed statistics",
+        "feature4": "Email support",
+        "cta": "Choose plan",
+        "highlight": "Most popular"
+      },
+      "premium": {
+        "title": "Premium",
+        "price": "€10",
+        "period": "/month",
+        "feature1": "Complete texts",
+        "feature2": "Advanced exercises",
+        "feature3": "Personalized analysis",
+        "feature4": "Priority support",
+        "cta": "Choose plan"
+      }
+    },
+    "cta": {
+      "title": "Begin your speed reading journey!",
+      "subtitle": "Join thousands of readers who have already improved their reading speed",
+      "button": "Register now!"
+    },
     "footer": {
       "rights": "All rights reserved."
     }
@@ -35,64 +75,80 @@
     "about": "About",
     "contact": "Contact",
     "benefits": "Benefits",
-    "login": "Login",
+    "login": "Log in",
+    "progress": "My Progress",
+    "play": "Play",
+    "profile": "Profile",
+    "logout": "Log out",
     "dashboard": "Dashboard"
   },
   "auth": {
-    "email": "Email address",
+    "email": "Email",
     "password": "Password",
     "loading": "Loading...",
-    "verifyEmail": "Please check your email to verify your account",
-    "resetEmailSent": "Password reset email has been sent",
+    "verifyEmail": "Please verify your email to continue",
+    "resetEmailSent": "A password reset email has been sent",
     "login": {
-      "title": "Sign in to your account",
-      "action": "Sign in",
-      "register": "Don't have an account? Sign up",
+      "title": "Log in",
+      "action": "Log in",
+      "register": "Don't have an account? Register",
       "forgot": "Forgot your password?"
     },
     "register": {
-      "title": "Create your account",
-      "action": "Sign up",
-      "login": "Already have an account? Sign in"
+      "title": "Create account",
+      "action": "Register",
+      "login": "Already have an account? Log in"
     },
     "reset": {
-      "title": "Reset your password",
-      "action": "Send reset email",
-      "back": "Back to sign in"
+      "title": "Reset password",
+      "action": "Send recovery email",
+      "back": "Back to login"
     },
     "verifyEmailTitle": "Verify your email",
     "resetEmailTitle": "Email sent",
     "verifiedEmailTitle": "Email verified!",
-    "verifiedEmail": "Thank you for verifying your email. You can now log in to your account.",
+    "verifiedEmail": "Thank you for verifying your email. You can now log in with your account.",
     "modal": {
-      "understand": "Got it",
-      "login": "Sign in"
+      "understand": "I understand",
+      "login": "Log in"
     }
   },
   "platform": {
-    "nav": {
-      "progress": "My Progress",
-      "play": "Practice",
-      "profile": "Profile",
-      "logout": "Sign out",
-      "dashboard": "Dashboard",
-      "jugadores": "Players"
-    },
-    "progress": {
-      "title": "My Progress",
-      "empty": "No progress data available yet. Start practicing!"
-    },
-    "profile": {
-      "title": "My Profile",
-      "email": "Email address",
-      "memberSince": "Member since",
-      "lastLogin": "Last login",
-      "userId": "User ID",
-      "noUserData": "Could not load user data",
-      "close": "Close"
-    },
+    "title": "Platform",
     "language": {
       "select": "Select language"
+    },
+    "nav": {
+      "dashboard": "Home",
+      "players": "Players",
+      "play": "Play",
+      "profile": "Profile",
+      "logout": "Log out"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "welcome": "Welcome to the platform",
+      "description": "Here you can manage your players and access games"
+    },
+    "profile": {
+      "title": "Profile",
+      "close": "Close",
+      "name": "Name",
+      "email": "Email",
+      "language": "Language",
+      "save": "Save changes",
+      "changePassword": "Change password",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "updateSuccess": "Profile updated successfully",
+      "updateError": "Error updating profile",
+      "passwordSuccess": "Password updated successfully",
+      "passwordError": "Error updating password",
+      "passwordMismatch": "Passwords do not match",
+      "memberSince": "Member since",
+      "lastLogin": "Last login",
+      "userId": "User ID"
     }
   },
   "players": {
@@ -158,21 +214,30 @@
     "skinDark": "Dark",
     "skinVeryDark": "Very dark",
     "confirmDelete": "Are you sure you want to delete this player?",
-    "playerDeleted": "Player successfully deleted",
-    "playerAdded": "Player successfully added",
-    "playerUpdated": "Player successfully updated",
+    "playerDeleted": "Player deleted successfully",
+    "playerAdded": "Player added successfully",
+    "playerUpdated": "Player updated successfully",
     "errorDeleting": "Error deleting player",
     "errorSaving": "Error saving player",
     "regenerateAvatar": "Regenerate avatar",
     "generatingAvatar": "Generating new avatar...",
-    "avatarRegenerated": "Avatar successfully regenerated!",
+    "avatarRegenerated": "Avatar regenerated successfully!",
     "errorRegeneratingAvatar": "Error regenerating avatar",
-    "basicInfo": "Basic info",
+    "basicInfo": "Basic information",
     "appearance": "Appearance",
     "next": "Next",
     "back": "Back",
     "edit": "Edit",
-    "delete": "Delete"
+    "delete": "Delete",
+    "createPlayer": "Create player",
+    "selectReadingLevel": "Select reading level",
+    "processing": "Processing...",
+    "enterName": "Enter name",
+    "enterAge": "Enter age",
+    "lockEditing": "Lock editing",
+    "unlockEditing": "Unlock editing",
+    "unlockEditingTitle": "Unlock editing",
+    "unlockEditingDescription": "Are you sure you want to unlock editing? This will allow editing and deleting players."
   },
   "edad": "Age",
   "nivelLectura": "Reading level",
@@ -182,5 +247,14 @@
   "save": "Save",
   "cancel": "Cancel",
   "create": "Create",
-  "errorFetchingData": "Error loading data"
+  "errorFetchingData": "Error loading data",
+  "confirm": "Confirm",
+  "common": {
+    "practice": "Play",
+    "practiceNow": "Play now"
+  },
+  "games": {
+    "startPractice": "Start playing",
+    "continuePractice": "Continue playing"
+  }
 } 
