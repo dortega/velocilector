@@ -9,7 +9,7 @@ const openai = new OpenAI({
 
 // Configuración de Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhobWt4eWJwZ2tsZWx4c3BzcWFjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MTg0NDE4MiwiZXhwIjoyMDU3NDIwMTgyfQ.hrrHSkBrcbnnEsVQ7IioKhx7gIxUvqC_L4lpCDO7B1Q'; //process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // Constantes para el almacenamiento

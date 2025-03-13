@@ -7,6 +7,7 @@ import PlayerCard from './components/PlayerCard';
 import PlayerModal from './components/PlayerModal';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
+import AddIcon from '@mui/icons-material/Add';
 
 export default function PlayersPage() {
   const t = useTranslations();
@@ -190,10 +191,10 @@ export default function PlayersPage() {
         </div>
       )}
       
-      {/* Toast para mensajes */}
+      {/* Toast para mensajes - adaptado para móvil */}
       <div 
         ref={toastRef}
-        className={`toast toast-top toast-center z-50 hidden transition-all duration-300 ${
+        className={`toast toast-top toast-center z-50 hidden transition-all duration-300 w-auto max-w-[90vw] sm:max-w-md ${
           toastType === 'error' ? 'alert-error' : 
           toastType === 'success' ? 'alert-success' : 
           toastType === 'warning' ? 'alert-warning' : 'bg-green-100 text-green-800'
@@ -204,7 +205,8 @@ export default function PlayersPage() {
         </div>
       </div>
       
-      <div className="flex justify-between items-center mb-6">
+      {/* Encabezado adaptado para móvil */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6">
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold">{t('players.title')}</h1>
           <button 
@@ -216,10 +218,11 @@ export default function PlayersPage() {
           </button>
         </div>
         <button 
-          className="btn bg-green-500 hover:bg-green-600 text-white border-none"
+          className="btn bg-green-500 hover:bg-green-600 text-white border-none w-full sm:w-auto"
           onClick={handleAddPlayer}
           disabled={isProcessing}
         >
+          <AddIcon className="mr-2" />
           {t('players.addPlayer')}
         </button>
       </div>
@@ -242,6 +245,7 @@ export default function PlayersPage() {
             onClick={handleAddPlayer}
             disabled={isProcessing}
           >
+            <AddIcon className="mr-2" />
             {t('players.addPlayer')}
           </button>
         </div>
@@ -272,28 +276,34 @@ export default function PlayersPage() {
       />
       
       {/* Modal de confirmación para desbloquear edición */}
-      {showUnlockConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-base-100 p-6 rounded-lg shadow-xl max-w-md w-full">
-            <h3 className="font-bold text-lg mb-4 text-green-600">{t('players.confirmUnlock')}</h3>
-            <p className="mb-6">{t('players.unlockWarning')}</p>
-            <div className="flex justify-end gap-2">
-              <button 
-                className="btn btn-outline" 
-                onClick={() => setShowUnlockConfirm(false)}
-              >
-                {t('cancel')}
-              </button>
-              <button 
-                className="btn bg-green-500 hover:bg-green-600 text-white border-none" 
-                onClick={confirmUnlock}
-              >
-                {t('confirm')}
-              </button>
-            </div>
+      <dialog id="unlock_confirm_modal" className={`modal ${showUnlockConfirm ? 'modal-open' : ''}`}>
+        <div className="modal-box max-w-sm mx-auto">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-bold text-lg">{t('players.unlockEditingTitle')}</h3>
+            <button 
+              onClick={() => setShowUnlockConfirm(false)}
+              className="btn btn-sm btn-circle btn-ghost"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <p className="py-4">{t('players.unlockEditingDescription')}</p>
+          <div className="mt-6">
+            <button 
+              className="btn bg-green-500 hover:bg-green-600 text-white border-none w-full"
+              onClick={confirmUnlock}
+            >
+              <LockOpenIcon className="mr-2" />
+              {t('players.unlockEditing')}
+            </button>
           </div>
         </div>
-      )}
+        <form method="dialog" className="modal-backdrop">
+          <button onClick={() => setShowUnlockConfirm(false)}>close</button>
+        </form>
+      </dialog>
     </div>
   );
 } 
