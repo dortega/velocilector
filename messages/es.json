@@ -237,7 +237,14 @@
     "lockEditing": "Bloquear edición",
     "unlockEditing": "Desbloquear edición",
     "unlockEditingTitle": "Desbloquear edición",
-    "unlockEditingDescription": "¿Estás seguro de que quieres desbloquear la edición? Esto permitirá editar y eliminar jugadores."
+    "unlockEditingDescription": "¿Estás seguro de que quieres desbloquear la edición? Esto permitirá editar y eliminar jugadores.",
+    "readingLevels": {
+      "beginner": "Principiante",
+      "elementary": "Elemental",
+      "intermediate": "Intermedio",
+      "advanced": "Avanzado",
+      "expert": "Experto"
+    }
   },
   "edad": "Edad",
   "nivelLectura": "Nivel de lectura",
@@ -256,5 +263,40 @@
   "games": {
     "startPractice": "Empezar a jugar",
     "continuePractice": "Continuar jugando"
+  },
+  "play": {
+    "settings": "Configuración",
+    "gameSetup": "Configuración del juego",
+    "selectPlayer": "Selecciona un jugador",
+    "selectLevel": "Selecciona tu nivel de lectura",
+    "selectGame": "Selecciona un juego",
+    "start": "Comenzar",
+    "startGame": "Iniciar juego",
+    "startReading": "Comenzar lectura",
+    "tapToContinue": "Toca para continuar",
+    "noGameSelected": "No se ha seleccionado ningún juego",
+    "back": "Volver",
+    "backToMenu": "Volver al menú",
+    "exit": "Salir del juego",
+    "speedReading": "Velocidad de lectura",
+    "comprehension": "Comprensión lectora",
+    "question": "Pregunta",
+    "nextQuestion": "Siguiente pregunta",
+    "finishQuiz": "Finalizar",
+    "results": "Resultados",
+    "perfectScore": "¡Puntuación perfecta! ¡Excelente comprensión!",
+    "goodScore": "¡Buen trabajo! Sigue practicando.",
+    "tryAgain": "Sigue practicando para mejorar tu comprensión.",
+    "speedInstructions": {
+      "auto": "Las palabras cambiarán automáticamente cada {speed} segundos.",
+      "manual": "Toca la pantalla para avanzar a la siguiente palabra."
+    },
+    "comprehensionInstructions": "Lee el texto palabra por palabra y luego responde las preguntas.",
+    "games": {
+      "speedReading": "Velocidad de lectura",
+      "speedReadingDesc": "Mejora tu velocidad de lectura con palabras aleatorias",
+      "comprehension": "Comprensión lectora",
+      "comprehensionDesc": "Lee textos y responde preguntas para mejorar tu comprensión"
+    }
   }
 } 

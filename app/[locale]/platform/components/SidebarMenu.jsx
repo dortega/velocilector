@@ -68,9 +68,9 @@ export default function SidebarMenu({ onLogout, onProfileClick, isMobileMenuOpen
               </li>
               <li>
                 <Link 
-                  href="/platform/jugar" 
+                  href="/play" 
                   className={`flex items-center p-3 rounded-lg transition-colors ${
-                    isActive('/platform/jugar') 
+                    isActive('/play') 
                       ? 'bg-green-50 text-green-700' 
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
@@ -127,9 +127,9 @@ export default function SidebarMenu({ onLogout, onProfileClick, isMobileMenuOpen
           </Link>
           
           <Link 
-            href="/platform/jugar" 
+            href="/play" 
             className={`flex flex-col items-center justify-center flex-1 py-2 ${
-              isActive('/platform/jugar') ? 'text-green-600' : 'text-gray-600'
+              isActive('/play') ? 'text-green-600' : 'text-gray-600'
             }`}
           >
             <SportsEsportsIcon fontSize="small" />
