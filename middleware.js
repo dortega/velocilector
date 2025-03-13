@@ -2,15 +2,20 @@ import createIntlMiddleware from 'next-intl/middleware';
 
 const locales = ['en', 'es'];
 
-// Simplificamos el middleware para que solo maneje la internacionalización
+// Middleware de internacionalización
 const intlMiddleware = createIntlMiddleware({
   locales,
-  defaultLocale: 'es',
-  localePrefix: 'always'
+  defaultLocale: 'es'
 });
 
-export default intlMiddleware;
+export function middleware(request) {
+  // Aplicar el middleware de internacionalización a todas las rutas
+  return intlMiddleware(request);
+}
 
 export const config = {
-  matcher: ['/((?!api|_next|.*\\..*).*)']
-} 
+  matcher: [
+    // Excluir archivos estáticos y API routes
+    '/((?!api|_next/static|_next/image|favicon.ico|icons|apple-touch-icon.png|manifest.json).*)',
+  ],
+}; 
