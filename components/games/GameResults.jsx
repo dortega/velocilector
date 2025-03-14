@@ -28,7 +28,7 @@ export default function GameResults({
           <div className="flex flex-col items-center text-center w-full">
             <span className="font-bold text-lg">{t('play.enjoyedGame')}</span>
             <span>{t('play.registerToSave')}</span>
-            <a href="/auth/signup" className="btn bg-green-600 hover:bg-green-700 text-white mt-3">
+            <a href="/auth/register" className="btn bg-green-600 hover:bg-green-700 text-white mt-3">
               {t('auth.registerAction')}
             </a>
           </div>

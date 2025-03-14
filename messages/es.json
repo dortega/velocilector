@@ -131,12 +131,16 @@
       "welcome": "Bienvenido a la plataforma",
       "description": "Aquí podrás gestionar tus jugadores y acceder a los juegos"
     },
+    "progress": {
+      "title": "Tu progreso",
+      "empty": "Aún no tienes ningún progreso registrado. ¡Comienza a jugar para ver tus estadísticas!"
+    },
     "profile": {
       "title": "Perfil",
       "close": "Cerrar",
       "name": "Nombre",
       "email": "Correo electrónico",
-      "language": "Idioma",
+      "language": "Idioma preferido",
       "save": "Guardar cambios",
       "changePassword": "Cambiar contraseña",
       "currentPassword": "Contraseña actual",
@@ -149,7 +153,10 @@
       "passwordMismatch": "Las contraseñas no coinciden",
       "memberSince": "Miembro desde",
       "lastLogin": "Último acceso",
-      "userId": "ID de usuario"
+      "userId": "ID de usuario",
+      "noUserData": "No se encontraron datos de usuario",
+      "joined": "Se unió",
+      "update": "Actualizar perfil"
     }
   },
   "players": {
