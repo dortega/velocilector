@@ -1,43 +1,87 @@
-import { supabase } from '@/services/supabase';
+import { supabase } from './supabase';
+import { authService } from './auth';
 
 export const scoresService = {
   /**
-   * Guarda un registro de juego de velocidad de lectura
+   * Guarda los resultados de un juego de lectura rápida
    * @param {Object} gameData - Datos del juego
-   * @returns {Promise<Object>} - Registro guardado
+   * @returns {Promise<Object>} - Resultado de la operación
    */
   async saveSpeedReadingGame(gameData) {
     try {
+      // Obtener el usuario actual
+      const currentUser = await authService.getCurrentUser();
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      // Preparar datos según la estructura exacta de la tabla
+      const dataToSave = {
+        user_id: currentUser.id,
+        player_id: gameData.player_id,
+        level: gameData.level,
+        language: gameData.language,
+        words: JSON.stringify(gameData.words_used || []), // Convertir array a JSONB
+        word_count: gameData.word_count,
+        total_time: Math.round(gameData.total_time), // Convertir a entero si es necesario
+        average_time: gameData.average_time,
+        errors: gameData.errors || 0 // Valor por defecto
+      };
+      
+      // No es necesario incluir created_at ya que tiene valor por defecto
+      
       const { data, error } = await supabase
         .from('speed_reading_games')
-        .insert([gameData])
-        .select();
+        .insert([dataToSave]);
       
       if (error) throw error;
-      return data[0];
+      return { data, error: null };
     } catch (error) {
       console.error('Error saving speed reading game:', error);
-      throw error;
+      return { data: null, error };
     }
   },
   
   /**
-   * Guarda un registro de juego de comprensión lectora
+   * Guarda los resultados de un juego de comprensión lectora
    * @param {Object} gameData - Datos del juego
-   * @returns {Promise<Object>} - Registro guardado
+   * @returns {Promise<Object>} - Resultado de la operación
    */
   async saveComprehensionGame(gameData) {
     try {
+      // Obtener el usuario actual
+      const currentUser = await authService.getCurrentUser();
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      // Preparar datos según la estructura exacta de la tabla
+      const dataToSave = {
+        user_id: currentUser.id,
+        player_id: gameData.player_id,
+        text_id: gameData.text_id,
+        level: gameData.level,
+        language: gameData.language,
+        text_content: gameData.text_content,
+        word_count: gameData.word_count,
+        reading_time: Math.round(gameData.reading_time),
+        average_reading_time: gameData.average_reading_time,
+        questions: JSON.stringify(gameData.questions || []),
+        correct_answers: gameData.correct_answers,
+        total_questions: gameData.total_questions,
+        answer_times: JSON.stringify(gameData.answer_times || []),
+        total_answer_time: Math.round(gameData.total_answer_time)
+      };
+      
       const { data, error } = await supabase
         .from('comprehension_games')
-        .insert([gameData])
-        .select();
+        .insert([dataToSave]);
       
       if (error) throw error;
-      return data[0];
+      return { data, error: null };
     } catch (error) {
       console.error('Error saving comprehension game:', error);
-      throw error;
+      return { data: null, error };
     }
   },
   

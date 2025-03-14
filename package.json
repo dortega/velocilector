@@ -15,10 +15,12 @@
     "@mui/material": "^6.4.7",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.49.1",
+    "chart.js": "^4.4.8",
     "next": "15.2.2",
     "next-intl": "^4.0.0",
     "openai": "^4.87.3",
     "react": "^19.0.0",
+    "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {

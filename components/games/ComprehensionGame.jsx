@@ -171,7 +171,7 @@ export default function ComprehensionGame({ level, playerId, shouldSaveProgress 
       setScore(correctCount);
       
       // Guardar puntuación
-      saveGameScore(correctCount);
+      saveGameScore();
       
       // Mostrar resultados
       setGameState('results');
@@ -179,50 +179,47 @@ export default function ComprehensionGame({ level, playerId, shouldSaveProgress 
   }, [currentQuestionIndex, questions, answers]);
   
   // Guardar puntuación del juego
-  const saveGameScore = useCallback(async (correctCount) => {
-    // Calcular estadísticas del juego
-    const readingTime = readingEndTimeRef.current - readingStartTimeRef.current;
-    const averageReadingTime = readingTime / words.length;
-    
-    // Calcular tiempos de respuesta
-    const answerTimes = questionTimesRef.current.map(q => ({
-      questionId: q.questionId,
-      time: q.endTime - q.startTime
-    }));
-    
-    const totalAnswerTime = answerTimes.reduce((sum, q) => sum + q.time, 0);
-    
-    // Preparar datos para guardar
-    const gameData = {
-      player_id: playerId,
-      level: parseInt(level) || 1,
-      language: locale,
-      text_content: text,
-      text_id: textIdRef.current,
-      word_count: words.length,
-      reading_time: readingTime,
-      average_reading_time: averageReadingTime,
-      questions: questions.map((q, i) => ({
-        id: q.id,
-        question: q.question,
-        options: q.options,
-        correctAnswer: q.correctAnswer,
-        userAnswer: answers[i]
-      })),
-      correct_answers: correctCount,
-      total_questions: questions.length,
-      answer_times: answerTimes,
-      total_answer_time: totalAnswerTime
-    };
+  const saveGameScore = useCallback(async () => {
+    if (!playerId) return;
     
     try {
+      // Calcular estadísticas
+      const correctAnswers = answers.filter((answer, index) => 
+        answer === questions[index].correctAnswer
+      ).length;
+      
+      const readingTime = readingEndTimeRef.current - readingStartTimeRef.current;
+      const averageReadingTime = readingTime / words.length;
+      
+      // Preparar datos para guardar
+      const gameData = {
+        player_id: playerId,
+        text_id: textIdRef.current,
+        level: parseInt(level) || 1,
+        language: locale,
+        text_content: text,
+        word_count: words.length,
+        reading_time: readingTime,
+        average_reading_time: averageReadingTime,
+        questions: questions,
+        correct_answers: correctAnswers,
+        total_questions: questions.length,
+        answer_times: questionTimesRef.current,
+        total_answer_time: questionTimesRef.current.reduce((sum, q) => {
+          if (q.endTime && q.startTime) {
+            return sum + (q.endTime - q.startTime);
+          }
+          return sum;
+        }, 0)
+      };
+      
       // Guardar puntuación
       await scoresService.saveComprehensionGame(gameData);
-      console.log('Game score saved successfully');
+      console.log('Comprehension game score saved successfully');
     } catch (error) {
-      console.error('Error saving game score:', error);
+      console.error('Error saving comprehension game score:', error);
     }
-  }, [playerId, level, locale, text, words.length, questions, answers]);
+  }, [playerId, level, locale, questions, answers, words, text]);
   
   // Calcular progreso de lectura
   const readingProgress = (currentWordIndex / (words.length - 1)) * 100;
@@ -248,9 +245,24 @@ export default function ComprehensionGame({ level, playerId, shouldSaveProgress 
     
     // Guardar puntuación solo si hay un jugador seleccionado
     if (shouldSaveProgress) {
-      saveGameScore(correctCount);
+      saveGameScore();
     }
   }, [answers, questions, shouldSaveProgress, saveGameScore]);
+  
+  // Función para calcular el tamaño de fuente adaptativo
+  const calculateFontSize = (word) => {
+    if (!word) return 'text-7xl';
+    
+    const length = word.length;
+    
+    // Ajustar tamaño según longitud de la palabra
+    if (length <= 4) return 'text-7xl'; // Palabras muy cortas
+    if (length <= 6) return 'text-7xl'; // Palabras cortas
+    if (length <= 8) return 'text-6xl'; // Palabras medias
+    if (length <= 10) return 'text-6xl'; // Palabras largas
+    if (length <= 12) return 'text-6xl'; // Palabras muy largas
+    return 'text-3xl'; // Palabras extremadamente largas
+  };
   
   // Renderizar el juego según el estado
   return (
@@ -314,11 +326,15 @@ export default function ComprehensionGame({ level, playerId, shouldSaveProgress 
         
         {gameState === 'reading' && (
           <div 
-            className="text-center"
+            className="flex-grow flex items-center justify-center px-4"
             onClick={nextWord}
           >
-            <div className="text-7xl font-bold mb-8">{words[currentWordIndex]}</div>
-            <p className="text-xl opacity-70">{t('play.tapToContinue')}</p>
+            <div className="text-center w-full">
+              <div className={`font-bold mb-8 break-words max-w-full mx-auto ${calculateFontSize(words[currentWordIndex])}`}>
+                {words[currentWordIndex]}
+              </div>
+              <p className="text-xl opacity-70">{t('play.tapToContinue')}</p>
+            </div>
           </div>
         )}
         
