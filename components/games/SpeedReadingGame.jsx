@@ -105,9 +105,10 @@ export default function SpeedReadingGame({ level, playerId, shouldSaveProgress =
         level: parseInt(level) || 1,
         language: locale,
         word_count: wordCountRef.current,
+        words_used: usedWordsRef.current, // Array de palabras usadas
         total_time: totalTime,
         average_time: averageTime,
-        speed_setting: wordSpeed
+        errors: 0 // No hay errores en este juego
       };
       
       // Guardar puntuación
@@ -116,7 +117,7 @@ export default function SpeedReadingGame({ level, playerId, shouldSaveProgress =
     } catch (error) {
       console.error('Error saving game score:', error);
     }
-  }, [playerId, level, locale, wordSpeed]);
+  }, [playerId, level, locale]);
   
   // Finalizar el juego
   const finishGame = useCallback(() => {
