@@ -240,7 +240,6 @@ export const dashboardService = {
         .select(`
           id,
           player_id,
-          players:player_id(name),
           level,
           language,
           word_count,
@@ -250,7 +249,9 @@ export const dashboardService = {
         .eq('language', language)
         .order('created_at', { ascending: false });
       
-      if (speedError) throw speedError;
+      if (speedError) {
+        throw speedError;
+      }
       
       // Obtener los mejores jugadores de comprensión
       const { data: compGames, error: compError } = await supabase
@@ -258,7 +259,6 @@ export const dashboardService = {
         .select(`
           id,
           player_id,
-          players:player_id(name),
           level,
           language,
           correct_answers,
@@ -268,32 +268,74 @@ export const dashboardService = {
         .eq('language', language)
         .order('created_at', { ascending: false });
       
-      if (compError) throw compError;
+      if (compError) {
+        throw compError;
+      }
+      
+      // Obtener información de los jugadores
+      const playerIds = new Set([
+        ...speedGames.map(game => game.player_id),
+        ...compGames.map(game => game.player_id)
+      ]);
+      
+      const { data: players, error: playersError } = await supabase
+        .from('players')
+        .select('id, name')
+        .in('id', Array.from(playerIds));
+      
+      if (playersError) {
+        throw playersError;
+      }
+      
+      // Crear un mapa de jugadores para búsqueda rápida
+      const playerMap = {};
+      players.forEach(player => {
+        playerMap[player.id] = player.name;
+      });
       
       // Procesar datos para el leaderboard de velocidad
       const speedPlayers = {};
       speedGames.forEach(game => {
         const playerId = game.player_id;
-        const playerName = game.players?.name || 'Unknown';
+        const playerName = playerMap[playerId] || 'Unknown';
+        
+        if (!game.total_time || game.total_time === 0) {
+          return; // Saltar este juego
+        }
+        
         const minutes = game.total_time / 60000;
         const speed = Math.round(game.word_count / minutes);
         
-        if (!speedPlayers[playerId] || speed > speedPlayers[playerId].bestSpeed) {
+        // Inicializar el objeto del jugador si no existe
+        if (!speedPlayers[playerId]) {
           speedPlayers[playerId] = {
             playerName,
-            bestSpeed: speed,
-            totalGames: speedPlayers[playerId]?.totalGames + 1 || 1
+            totalSpeed: 0,
+            totalGames: 0,
+            averageSpeed: 0
           };
-        } else {
-          speedPlayers[playerId].totalGames += 1;
         }
+        
+        // Acumular la velocidad y contar los juegos
+        speedPlayers[playerId].totalSpeed += speed;
+        speedPlayers[playerId].totalGames += 1;
+        
+        // Calcular la velocidad media
+        speedPlayers[playerId].averageSpeed = Math.round(
+          speedPlayers[playerId].totalSpeed / speedPlayers[playerId].totalGames
+        );
       });
       
       // Procesar datos para el leaderboard de comprensión
       const compPlayers = {};
       compGames.forEach(game => {
         const playerId = game.player_id;
-        const playerName = game.players?.name || 'Unknown';
+        const playerName = playerMap[playerId] || 'Unknown';
+        
+        if (!game.total_questions || game.total_questions === 0) {
+          return; // Saltar este juego
+        }
+        
         const score = Math.round((game.correct_answers / game.total_questions) * 100);
         
         if (!compPlayers[playerId] || score > compPlayers[playerId].bestScore) {
@@ -312,10 +354,10 @@ export const dashboardService = {
         .map(([playerId, data]) => ({
           playerId,
           playerName: data.playerName,
-          bestSpeed: data.bestSpeed,
+          averageSpeed: data.averageSpeed,
           totalGames: data.totalGames
         }))
-        .sort((a, b) => b.bestSpeed - a.bestSpeed)
+        .sort((a, b) => b.averageSpeed - a.averageSpeed)
         .slice(0, 5)
         .map((player, index) => ({ ...player, position: index + 1 }));
       
@@ -336,7 +378,6 @@ export const dashboardService = {
         comprehensionLeaders
       };
     } catch (error) {
-      console.error('Error fetching leaderboard:', error);
       return {
         level,
         speedLeaders: [],
