@@ -11,14 +11,14 @@ export default function GameSelector({ onSelect, selectedGame, readingLevel }) {
       id: 'speed',
       title: t('play.games.speedReading'),
       description: t('play.games.speedReadingDesc'),
-      icon: <SpeedIcon style={{ fontSize: 40, color: '#3b82f6' }} />,
-      bgColor: 'bg-blue-100'
+      icon: <SpeedIcon style={{ fontSize: 40, color: '#16a34a' }} />,
+      bgColor: 'bg-green-100'
     },
     {
       id: 'comprehension',
       title: t('play.games.comprehension'),
       description: t('play.games.comprehensionDesc'),
-      icon: <MenuBookIcon style={{ fontSize: 40, color: '#10b981' }} />,
+      icon: <MenuBookIcon style={{ fontSize: 40, color: '#16a34a' }} />,
       bgColor: 'bg-green-100'
     }
   ];
@@ -30,7 +30,7 @@ export default function GameSelector({ onSelect, selectedGame, readingLevel }) {
           key={game.id}
           onClick={() => onSelect(game.id)}
           className={`cursor-pointer border-2 rounded-lg p-4 flex items-center ${
-            selectedGame === game.id ? 'border-primary bg-primary/10' : 'border-base-300'
+            selectedGame === game.id ? 'border-green-600 bg-green-50' : 'border-base-300'
           }`}
         >
           <div className={`w-16 h-16 rounded-full ${game.bgColor} flex items-center justify-center mr-4`}>

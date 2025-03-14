@@ -111,7 +111,8 @@
     "modal": {
       "understand": "Entendido",
       "login": "Iniciar sesión"
-    }
+    },
+    "registerAction": "Registrarse"
   },
   "platform": {
     "title": "Plataforma",
@@ -278,6 +279,9 @@
     "back": "Volver",
     "backToMenu": "Volver al menú",
     "exit": "Salir del juego",
+    "restartGame": "Reiniciar juego",
+    "newGame": "Nuevo juego",
+    "playAgain": "Jugar de nuevo",
     "speedReading": "Velocidad de lectura",
     "comprehension": "Comprensión lectora",
     "question": "Pregunta",
@@ -297,6 +301,15 @@
       "speedReadingDesc": "Mejora tu velocidad de lectura con palabras aleatorias",
       "comprehension": "Comprensión lectora",
       "comprehensionDesc": "Lee textos y responde preguntas para mejorar tu comprensión"
-    }
+    },
+    "enjoyedGame": "¿Te ha gustado el juego?",
+    "registerToSave": "Regístrate para guardar tu progreso y acceder a más niveles",
+    "gameCompleted": "¡Juego completado!",
+    "score": "Puntuación",
+    "correctAnswers": "Respuestas correctas",
+    "wordsRead": "Palabras leídas",
+    "averageSpeed": "Velocidad media",
+    "wpm": "ppm",
+    "levelLocked": "Nivel bloqueado"
   }
 } 

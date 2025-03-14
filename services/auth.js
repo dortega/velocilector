@@ -52,13 +52,25 @@ export const authService = {
     }
   },
 
+  /**
+   * Obtiene el usuario actual
+   * @returns {Promise<Object|null>} - Usuario actual o null si no hay sesión
+   */
   async getCurrentUser() {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser()
-      if (error) throw error
-      return { user, error: null }
+      // Obtener la sesión actual
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // Si no hay sesión, devolver null
+      if (!session) {
+        return null;
+      }
+      
+      // Devolver el usuario de la sesión
+      return session.user;
     } catch (error) {
-      return { user: null, error: error.message }
+      console.error('Error getting current user:', error);
+      return null;
     }
   },
 

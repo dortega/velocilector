@@ -5,6 +5,7 @@ import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import SchoolIcon from '@mui/icons-material/School';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import EmojiObjectsIcon from '@mui/icons-material/EmojiObjects';
+import LockIcon from '@mui/icons-material/Lock';
 
 export default function ReadingLevelSelector({ value, onChange }) {
   const t = useTranslations();
@@ -15,36 +16,41 @@ export default function ReadingLevelSelector({ value, onChange }) {
       value: 'beginner', 
       label: t('players.readingLevels.beginner'), 
       icon: <MenuBookIcon />,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-100'
+      color: 'text-green-500',
+      bgColor: 'bg-green-100',
+      enabled: true
     },
     { 
       value: 'elementary', 
       label: t('players.readingLevels.elementary'), 
       icon: <AutoStoriesIcon />,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-200'
+      color: 'text-green-600',
+      bgColor: 'bg-green-200',
+      enabled: true
     },
     { 
       value: 'intermediate', 
       label: t('players.readingLevels.intermediate'), 
       icon: <SchoolIcon />,
-      color: 'text-blue-700',
-      bgColor: 'bg-blue-300'
+      color: 'text-green-700',
+      bgColor: 'bg-green-300',
+      enabled: false
     },
     { 
       value: 'advanced', 
       label: t('players.readingLevels.advanced'), 
       icon: <PsychologyIcon />,
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-300'
+      color: 'text-green-600',
+      bgColor: 'bg-green-300',
+      enabled: false
     },
     { 
       value: 'expert', 
       label: t('players.readingLevels.expert'), 
       icon: <EmojiObjectsIcon />,
-      color: 'text-indigo-700',
-      bgColor: 'bg-indigo-400'
+      color: 'text-green-700',
+      bgColor: 'bg-green-400',
+      enabled: false
     }
   ];
   
@@ -52,23 +58,35 @@ export default function ReadingLevelSelector({ value, onChange }) {
     <div className="grid grid-cols-1 gap-3">
       {readingLevels.map(level => {
         const isSelected = value === level.value;
+        const isDisabled = !level.enabled;
         
         return (
           <div 
             key={level.value}
-            onClick={() => onChange(level.value)}
+            onClick={() => level.enabled && onChange(level.value)}
             className={`cursor-pointer border-2 rounded-lg p-3 flex items-center ${
-              isSelected ? 'border-primary bg-primary/10' : 'border-base-300'
+              isDisabled ? 'opacity-60 cursor-not-allowed' : 
+              isSelected ? 'border-green-600 bg-green-50' : 'border-base-300 hover:bg-green-50'
             }`}
           >
             <div className={`w-12 h-12 rounded-full ${level.bgColor} flex items-center justify-center mr-4`}>
               <span className={level.color}>
-                {level.icon}
+                {isDisabled ? <LockIcon /> : level.icon}
               </span>
             </div>
-            <div>
+            <div className="flex-1">
               <div className="font-medium">{level.label}</div>
+              {isDisabled && (
+                <div className="text-xs text-gray-500">
+                  {t('players.levelLocked')}
+                </div>
+              )}
             </div>
+            {isDisabled && (
+              <div className="ml-2 text-gray-400">
+                <LockIcon fontSize="small" />
+              </div>
+            )}
           </div>
         );
       })}

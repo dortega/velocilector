@@ -1,0 +1,11 @@
+
+Ahora me gustaría hacer ya la pantalla del juego. Debería estar en un layout propio, ya que debería ser a pantalla completa. El layout basico es muy sencillo, simplemente una palabra en el centro que irá cambiando o bien por pulsacion o bien por tiempo, un contador de palabras arriba (que puede ser tambien un progressbar en algunos casos) y luego un botón de coniguración a la izquierda arriba, que accederá a la configuración del juego y salir. 
+
+Lo primero que tenemos que hacer es abrir /lang/play y ahí tenemos que abrir directamente ese popup de configuración que en el estado inicial (nada más entrar) tendrá las posibildades de configuración del juego. Estas posibilidades serán:
+
+- Si estás logueado (se puede entrar sin estar logueado y puedes jugar gratis con el plan básico, pero no tendrás el seguimiento de avances) te permitirá elegir el jugador con el que quieres jugar.
+- si no estás logueado tendrás que elegir tu nivel con el selector de nivel que tenemos en editar usuario. 
+
+- Cuando tienes el jugador o el nivel elegido te permitirá elegir entre dos juegos (por ahora), que se adaptarán a tu nivel
+- El primer juego es velocidad de lectura, que según el nivel mostrará palabras de forma aleatoria para que las leas y pasar a la siguiente. En niveles básicos (1 y 2 de 5) no hay tiempo y se pasará de palabra con tap, en niveles 3 a 5 habrá un timer que irá haciendose más rápido conforme más entrenas (habrá que ajustar bien este timer)
+- El segundo juego es comprensión lectora, que lo que cambiará según el nivel serán los textos. De unos textos pasarán palabras que irás leyendo (mas o menos dependiendo deltexto) mientras se rellena la barra de progreso, hasta que las has leido todas y se ha rellenado por completo la barra. Cuando acabas te hará entre 1 y 5 preguntas sobre el texto (dependiendo de la longitud y dificultad). Si aciertas, ganas. 
