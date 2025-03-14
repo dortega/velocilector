@@ -252,6 +252,21 @@ export default function ComprehensionGame({ level, playerId, shouldSaveProgress 
     }
   }, [answers, questions, shouldSaveProgress, saveGameScore]);
   
+  // Función para calcular el tamaño de fuente adaptativo
+  const calculateFontSize = (word) => {
+    if (!word) return 'text-7xl';
+    
+    const length = word.length;
+    
+    // Ajustar tamaño según longitud de la palabra
+    if (length <= 4) return 'text-7xl'; // Palabras muy cortas
+    if (length <= 6) return 'text-7xl'; // Palabras cortas
+    if (length <= 8) return 'text-6xl'; // Palabras medias
+    if (length <= 10) return 'text-6xl'; // Palabras largas
+    if (length <= 12) return 'text-6xl'; // Palabras muy largas
+    return 'text-3xl'; // Palabras extremadamente largas
+  };
+  
   // Renderizar el juego según el estado
   return (
     <div className="h-full w-full flex flex-col">
@@ -314,11 +329,15 @@ export default function ComprehensionGame({ level, playerId, shouldSaveProgress 
         
         {gameState === 'reading' && (
           <div 
-            className="text-center"
+            className="flex-grow flex items-center justify-center px-4"
             onClick={nextWord}
           >
-            <div className="text-7xl font-bold mb-8">{words[currentWordIndex]}</div>
-            <p className="text-xl opacity-70">{t('play.tapToContinue')}</p>
+            <div className="text-center w-full">
+              <div className={`font-bold mb-8 break-words max-w-full mx-auto ${calculateFontSize(words[currentWordIndex])}`}>
+                {words[currentWordIndex]}
+              </div>
+              <p className="text-xl opacity-70">{t('play.tapToContinue')}</p>
+            </div>
           </div>
         )}
         

@@ -25,6 +25,10 @@ export default function SpeedReadingGame({ level, playerId, shouldSaveProgress =
   const wordTimesRef = useRef([]);
   const usedWordsRef = useRef([]);
   const wordTimerRef = useRef(null);
+  const wordCountRef = useRef(0); // Referencia para el contador de palabras
+  
+  // Calcular progreso
+  const progress = Math.min((wordCount / totalWords) * 100, 100);
   
   // Cargar palabras de la base de datos
   useEffect(() => {
@@ -50,89 +54,69 @@ export default function SpeedReadingGame({ level, playerId, shouldSaveProgress =
   useEffect(() => {
     const levelNum = parseInt(level) || 1;
     
-    // Niveles 5+ usan avance automático
-    setAutoAdvance(levelNum >= 5);
+    // Niveles 1-2: Manual, 3+: Automático
+    setAutoAdvance(levelNum >= 3);
     
-    // Ajustar velocidad según el nivel
-    if (levelNum >= 5 && levelNum <= 6) setWordSpeed(1500);
-    if (levelNum >= 7 && levelNum <= 8) setWordSpeed(1000);
-    if (levelNum >= 9) setWordSpeed(800);
-  }, [level]);
-  
-  // Función para obtener una palabra aleatoria
-  const getRandomWord = useCallback(() => {
-    if (words.length === 0) return 'cargando...';
-    const word = words[Math.floor(Math.random() * words.length)];
-    usedWordsRef.current.push(word);
-    return word;
-  }, [words]);
-  
-  // Iniciar el juego
-  const startGame = useCallback(() => {
-    if (loading) return;
-    
-    setCurrentWord(getRandomWord());
-    setWordCount(1);
-    setIsPlaying(true);
-    setIsPaused(false);
-    setGameFinished(false);
-    
-    // Reiniciar referencias de tiempo
-    startTimeRef.current = Date.now();
-    wordTimesRef.current = [];
-    usedWordsRef.current = [];
-    
-    // Registrar el tiempo de la primera palabra
-    wordTimesRef.current.push({
-      word: currentWord,
-      startTime: Date.now(),
-      endTime: null
-    });
-    
-    // Iniciar temporizador para avance automático
-    if (autoAdvance) {
-      const timerId = setInterval(() => {
-        if (!isPaused) {
-          showNextWord();
-        }
-      }, wordSpeed);
-      
-      return () => clearInterval(timerId);
+    // Ajustar velocidad según nivel
+    if (levelNum <= 2) {
+      setWordSpeed(2000); // 2 segundos para principiantes
+    } else if (levelNum <= 4) {
+      setWordSpeed(1500); // 1.5 segundos para elementales
+    } else if (levelNum <= 6) {
+      setWordSpeed(1000); // 1 segundo para intermedios
+    } else if (levelNum <= 8) {
+      setWordSpeed(750); // 0.75 segundos para avanzados
+    } else {
+      setWordSpeed(500); // 0.5 segundos para expertos
     }
-  }, [loading, getRandomWord, autoAdvance, wordSpeed, isPaused, currentWord]);
+    
+    // Ajustar número total de palabras según nivel
+    if (levelNum <= 2) {
+      setTotalWords(30);
+    } else if (levelNum <= 4) {
+      setTotalWords(40);
+    } else if (levelNum <= 6) {
+      setTotalWords(50);
+    } else if (levelNum <= 8) {
+      setTotalWords(60);
+    } else {
+      setTotalWords(70);
+    }
+  }, [level]);
   
   // Guardar puntuación del juego
   const saveGameScore = useCallback(async () => {
-    // Calcular estadísticas del juego
-    const totalTime = wordTimesRef.current.reduce((sum, word) => {
-      if (word.endTime && word.startTime) {
-        return sum + (word.endTime - word.startTime);
-      }
-      return sum;
-    }, 0);
-    
-    const averageTime = totalTime / wordCount;
-    
-    // Preparar datos para guardar
-    const gameData = {
-      player_id: playerId,
-      level: parseInt(level) || 1,
-      language: locale,
-      word_count: wordCount,
-      words_used: usedWordsRef.current,
-      total_time: totalTime,
-      average_time: averageTime,
-      speed_setting: wordSpeed
-    };
+    if (!playerId) return;
     
     try {
+      // Calcular estadísticas del juego
+      const totalTime = wordTimesRef.current.reduce((sum, word) => {
+        if (word.endTime && word.startTime) {
+          return sum + (word.endTime - word.startTime);
+        }
+        return sum;
+      }, 0);
+      
+      const averageTime = totalTime / wordCountRef.current;
+      
+      // Preparar datos para guardar
+      const gameData = {
+        player_id: playerId,
+        level: parseInt(level) || 1,
+        language: locale,
+        word_count: wordCountRef.current,
+        total_time: totalTime,
+        average_time: averageTime,
+        speed_setting: wordSpeed
+      };
+      
       // Guardar puntuación
       await scoresService.saveSpeedReadingGame(gameData);
       console.log('Game score saved successfully');
     } catch (error) {
       console.error('Error saving game score:', error);
     }
-  }, [playerId, level, locale, wordCount, wordSpeed]);
+  }, [playerId, level, locale, wordSpeed]);
   
   // Finalizar el juego
   const finishGame = useCallback(() => {
@@ -140,6 +124,14 @@ export default function SpeedReadingGame({ level, playerId, shouldSaveProgress =
     if (wordTimerRef.current) {
       clearTimeout(wordTimerRef.current);
       wordTimerRef.current = null;
+    }
+    
+    // Registrar tiempo para la última palabra
+    if (wordTimesRef.current.length > 0) {
+      const lastWordIndex = wordTimesRef.current.length - 1;
+      if (!wordTimesRef.current[lastWordIndex].endTime) {
+        wordTimesRef.current[lastWordIndex].endTime = Date.now();
+      }
     }
     
     setIsPlaying(false);
@@ -154,16 +146,8 @@ export default function SpeedReadingGame({ level, playerId, shouldSaveProgress =
   // Función para mostrar la siguiente palabra
   const showNextWord = useCallback(() => {
     // Verificar si hemos alcanzado el límite de palabras
-    if (wordCount >= totalWords) {
-      // Usar una función anónima para llamar a finishGame
-      // en lugar de incluirla en las dependencias
-      setIsPlaying(false);
-      setGameFinished(true);
-      
-      // Guardar puntuación solo si hay un jugador seleccionado
-      if (shouldSaveProgress) {
-        saveGameScore();
-      }
+    if (wordCountRef.current >= totalWords) {
+      finishGame();
       return;
     }
     
@@ -191,8 +175,9 @@ export default function SpeedReadingGame({ level, playerId, shouldSaveProgress =
     // Registrar palabra usada
     usedWordsRef.current.push(wordToShow);
     
-    // Incrementar contador de palabras
-    setWordCount(prev => prev + 1);
+    // Incrementar contador de palabras (usando la referencia)
+    wordCountRef.current += 1;
+    setWordCount(wordCountRef.current);
     
     // Registrar tiempo para la palabra anterior si existe
     if (wordTimesRef.current.length > 0) {
@@ -211,21 +196,14 @@ export default function SpeedReadingGame({ level, playerId, shouldSaveProgress =
     if (autoAdvance && !isPaused) {
       wordTimerRef.current = setTimeout(() => {
         // Verificar nuevamente si hemos alcanzado el límite antes de mostrar la siguiente
-        if (wordCount < totalWords) {
+        if (wordCountRef.current < totalWords) {
           showNextWord();
         } else {
-          // Usar una función anónima para llamar a finishGame
-          setIsPlaying(false);
-          setGameFinished(true);
-          
-          // Guardar puntuación solo si hay un jugador seleccionado
-          if (shouldSaveProgress) {
-            saveGameScore();
-          }
+          finishGame();
         }
       }, wordSpeed);
     }
-  }, [words, wordCount, totalWords, autoAdvance, isPaused, wordSpeed, shouldSaveProgress, saveGameScore]);
+  }, [words, totalWords, autoAdvance, isPaused, wordSpeed, finishGame]);
   
   // Función para manejar tap/click
   const handleTap = useCallback(() => {
@@ -240,63 +218,99 @@ export default function SpeedReadingGame({ level, playerId, shouldSaveProgress =
       }
       
       // Verificar si hemos alcanzado el límite de palabras
-      if (wordCount >= totalWords) {
+      if (wordCountRef.current >= totalWords) {
         finishGame();
       } else {
         showNextWord();
       }
     }
-  }, [isPlaying, autoAdvance, wordCount, totalWords, showNextWord, finishGame]);
+  }, [isPlaying, autoAdvance, totalWords, showNextWord, finishGame]);
   
-  // Pausar/reanudar el juego
+  // Función para pausar/reanudar el juego
   const togglePause = useCallback(() => {
-    setIsPaused(prev => !prev);
-  }, []);
+    if (isPaused) {
+      // Reanudar juego
+      setIsPaused(false);
+      
+      // Programar siguiente palabra
+      wordTimerRef.current = setTimeout(showNextWord, wordSpeed);
+    } else {
+      // Pausar juego
+      setIsPaused(true);
+      
+      // Limpiar temporizador
+      if (wordTimerRef.current) {
+        clearTimeout(wordTimerRef.current);
+        wordTimerRef.current = null;
+      }
+    }
+  }, [isPaused, wordSpeed, showNextWord]);
   
-  // Reiniciar el juego
-  const resetGame = useCallback(() => {
-    setCurrentWord('');
-    setWordCount(0);
-    setIsPlaying(false);
+  // Función para iniciar el juego
+  const startGame = useCallback(() => {
+    // Reiniciar estado del juego
+    setIsPlaying(true);
     setIsPaused(false);
     setGameFinished(false);
-    
-    // Reiniciar referencias
-    startTimeRef.current = null;
-    wordTimesRef.current = [];
+    setWordCount(0);
+    wordCountRef.current = 0;
     usedWordsRef.current = [];
+    wordTimesRef.current = [];
+    startTimeRef.current = Date.now();
+    
+    // Mostrar primera palabra
+    showNextWord();
+  }, [showNextWord]);
+  
+  // Limpiar temporizadores al desmontar
+  useEffect(() => {
+    return () => {
+      if (wordTimerRef.current) {
+        clearTimeout(wordTimerRef.current);
+      }
+    };
   }, []);
   
-  // Escuchar eventos para reiniciar el juego
+  // Escuchar eventos para reiniciar configuración
   useEffect(() => {
-    const handleRestart = () => {
-      resetGame();
+    const handleNewConfig = () => {
+      // Limpiar temporizadores
+      if (wordTimerRef.current) {
+        clearTimeout(wordTimerRef.current);
+        wordTimerRef.current = null;
+      }
+      
+      // Reiniciar estado
+      setIsPlaying(false);
+      setIsPaused(false);
+      setGameFinished(false);
+      setWordCount(0);
+      wordCountRef.current = 0;
+      usedWordsRef.current = [];
+      wordTimesRef.current = [];
+      startTimeRef.current = null;
     };
     
-    window.addEventListener('game:restart', handleRestart);
+    window.addEventListener('game:newConfig', handleNewConfig);
     
     return () => {
-      window.removeEventListener('game:restart', handleRestart);
+      window.removeEventListener('game:newConfig', handleNewConfig);
     };
-  }, [resetGame]);
+  }, []);
   
-  // Calcular progreso
-  const progress = (wordCount / totalWords) * 100;
-  
-  // Función para guardar el progreso del juego
-  const saveGameProgress = async (stats) => {
-    if (!shouldSaveProgress) return; // No guardar si no hay usuario o jugador
+  // Función para calcular el tamaño de fuente adaptativo
+  const calculateFontSize = (word) => {
+    if (!word) return 'text-8xl'; // Tamaño base aumentado
     
-    try {
-      await gamesService.saveGameProgress({
-        player_id: playerId,
-        game_type: 'speed',
-        level,
-        stats
-      });
-    } catch (error) {
-      console.error('Error saving game progress:', error);
-    }
+    const length = word.length;
+    
+    // Ajustar tamaño según longitud de la palabra (todos aumentados)
+    if (length <= 4) return 'text-8xl'; // Palabras muy cortas
+    if (length <= 6) return 'text-7xl'; // Palabras cortas
+    if (length <= 8) return 'text-6xl'; // Palabras medias
+    if (length <= 10) return 'text-5xl'; // Palabras largas
+    if (length <= 12) return 'text-4xl'; // Palabras muy largas
+    return 'text-3xl'; // Palabras extremadamente largas
   };
   
   // Si el juego ha terminado, mostrar resultados
@@ -342,6 +356,7 @@ export default function SpeedReadingGame({ level, playerId, shouldSaveProgress =
             // Reiniciar el juego
             setGameFinished(false);
             setWordCount(0);
+            wordCountRef.current = 0;
             setCurrentWord('');
             wordTimesRef.current = [];
             usedWordsRef.current = [];
@@ -351,6 +366,7 @@ export default function SpeedReadingGame({ level, playerId, shouldSaveProgress =
             // Reiniciar el mismo juego
             setGameFinished(false);
             setWordCount(0);
+            wordCountRef.current = 0;
             setCurrentWord('');
             wordTimesRef.current = [];
             usedWordsRef.current = [];
@@ -379,7 +395,7 @@ export default function SpeedReadingGame({ level, playerId, shouldSaveProgress =
       
       {/* Área principal del juego */}
       <div 
-        className="flex-grow flex items-center justify-center"
+        className="flex-grow flex items-center justify-center px-4"
         onClick={handleTap}
       >
         {!isPlaying ? (
@@ -399,8 +415,10 @@ export default function SpeedReadingGame({ level, playerId, shouldSaveProgress =
             </button>
           </div>
         ) : (
-          <div className="text-center">
-            <div className="text-7xl font-bold mb-8">{currentWord}</div>
+          <div className="text-center w-full">
+            <div className={`font-bold mb-8 break-words max-w-full mx-auto ${calculateFontSize(currentWord)}`}>
+              {currentWord}
+            </div>
             {!autoAdvance && (
               <p className="text-xl opacity-70">{t('play.tapToContinue')}</p>
             )}
