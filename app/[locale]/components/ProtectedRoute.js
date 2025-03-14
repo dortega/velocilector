@@ -10,18 +10,22 @@ export default function ProtectedRoute({ children }) {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { user, error } = await authService.getCurrentUser();
-      
-      console.log('Auth check result:', { user, error });
-      
-      if (user) {
-        setIsAuthenticated(true);
-      } else {
-        // Redirigir a login si no hay usuario
+      try {
+        const user = await authService.getCurrentUser();
+        
+        if (user) {
+          setIsAuthenticated(true);
+        } else {
+          // Redirigir a login si no hay usuario
+          router.push('/auth/login');
+        }
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+        // En caso de error, también redirigir a login
         router.push('/auth/login');
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
     };
     
     checkAuth();

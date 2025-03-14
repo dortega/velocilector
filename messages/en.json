@@ -111,7 +111,8 @@
     "modal": {
       "understand": "I understand",
       "login": "Log in"
-    }
+    },
+    "registerAction": "Register"
   },
   "platform": {
     "title": "Platform",
@@ -278,6 +279,9 @@
     "back": "Back",
     "backToMenu": "Back to menu",
     "exit": "Exit game",
+    "restartGame": "Restart game",
+    "newGame": "New game",
+    "playAgain": "Play again",
     "speedReading": "Speed Reading",
     "comprehension": "Reading Comprehension",
     "question": "Question",
@@ -297,6 +301,15 @@
       "speedReadingDesc": "Improve your reading speed with random words",
       "comprehension": "Reading Comprehension",
       "comprehensionDesc": "Read texts and answer questions to improve your comprehension"
-    }
+    },
+    "enjoyedGame": "Did you enjoy the game?",
+    "registerToSave": "Register to save your progress and access more levels",
+    "gameCompleted": "Game completed!",
+    "score": "Score",
+    "correctAnswers": "Correct answers",
+    "wordsRead": "Words read",
+    "averageSpeed": "Average speed",
+    "wpm": "wpm",
+    "levelLocked": "Level locked"
   }
 } 

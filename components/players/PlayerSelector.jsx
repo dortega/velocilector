@@ -69,7 +69,7 @@ export default function PlayerSelector({ onSelect, selectedPlayer }) {
             key={player.id}
             onClick={() => onSelect(player)}
             className={`cursor-pointer border-2 rounded-lg p-4 flex flex-col items-center ${
-              selectedPlayer?.id === player.id ? 'border-primary bg-primary/10' : 'border-base-300'
+              selectedPlayer?.id === player.id ? 'border-green-600 bg-green-50' : 'border-green-200'
             }`}
           >
             <div className="avatar">

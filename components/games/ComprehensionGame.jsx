@@ -1,45 +1,15 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import { useParams } from 'next/navigation';
+import { questionsService } from '@/services/questions';
+import { scoresService } from '@/services/scores';
+import GameResults from './GameResults';
 
-// Textos de ejemplo por nivel
-const textsByLevel = {
-  'beginner': {
-    text: "Mi perro se llama Max. Max es grande y negro. Le gusta jugar en el parque. Corre muy rápido. Come mucha comida. Duerme en su cama. Max es mi mejor amigo.",
-    questions: [
-      {
-        question: "¿Cómo se llama el perro?",
-        options: ["Rex", "Max", "Toby", "Luna"],
-        correctAnswer: 1
-      },
-      {
-        question: "¿De qué color es el perro?",
-        options: ["Blanco", "Marrón", "Negro", "Gris"],
-        correctAnswer: 2
-      }
-    ]
-  },
-  'elementary': {
-    text: "Ana va a la escuela todos los días. Le gusta aprender matemáticas y ciencias. Su maestra se llama Sofía. Ana tiene muchos amigos en la escuela. Después de clase, juega en el patio. Luego, regresa a casa y hace su tarea. Ana disfruta mucho ir a la escuela.",
-    questions: [
-      {
-        question: "¿Qué materias le gusta aprender a Ana?",
-        options: ["Historia y Arte", "Matemáticas y Ciencias", "Música y Deporte", "Idiomas"],
-        correctAnswer: 1
-      },
-      {
-        question: "¿Qué hace Ana después de clase?",
-        options: ["Va a casa", "Juega en el patio", "Va a la biblioteca", "Come helado"],
-        correctAnswer: 1
-      }
-    ]
-  },
-  // Añadir más textos para otros niveles
-};
-
-export default function ComprehensionGame({ level, onExit }) {
+export default function ComprehensionGame({ level, playerId, shouldSaveProgress = false }) {
   const t = useTranslations();
-  const [gameState, setGameState] = useState('intro'); // intro, reading, questions, results
+  const { locale } = useParams();
+  const [gameState, setGameState] = useState('loading'); // loading, intro, reading, questions, results
   const [text, setText] = useState('');
   const [questions, setQuestions] = useState([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -47,82 +17,296 @@ export default function ComprehensionGame({ level, onExit }) {
   const [answers, setAnswers] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const [error, setError] = useState(null);
   
-  // Inicializar el juego con el texto y preguntas según el nivel
+  // Referencias para el seguimiento del tiempo
+  const readingStartTimeRef = useRef(null);
+  const readingEndTimeRef = useRef(null);
+  const wordTimesRef = useRef([]);
+  const questionTimesRef = useRef([]);
+  const textIdRef = useRef(null);
+  
+  // Cargar texto y preguntas de la base de datos
   useEffect(() => {
-    const levelData = textsByLevel[level] || textsByLevel.beginner;
-    setText(levelData.text);
-    setQuestions(levelData.questions);
-    setWords(levelData.text.split(' '));
-    setAnswers(new Array(levelData.questions.length).fill(null));
-  }, [level]);
+    const fetchTextWithQuestions = async () => {
+      try {
+        const levelNum = parseInt(level) || 1;
+        const data = await questionsService.getRandomTextWithQuestions(locale, levelNum);
+        
+        setText(data.text.content);
+        setWords(data.text.content.split(' '));
+        textIdRef.current = data.text.id;
+        
+        // Transformar las preguntas al formato esperado
+        const formattedQuestions = data.questions.map(q => ({
+          id: q.id,
+          question: q.question,
+          options: q.options,
+          correctAnswer: q.correct_answer
+        }));
+        
+        setQuestions(formattedQuestions);
+        setAnswers(new Array(formattedQuestions.length).fill(null));
+        setGameState('intro');
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching text with questions:', error);
+        setError('Error cargando el contenido. Por favor, intenta de nuevo.');
+        setGameState('error');
+      }
+    };
+    
+    fetchTextWithQuestions();
+  }, [level, locale]);
+  
+  // Inicializar el juego
+  const initializeGame = useCallback(() => {
+    setGameState('intro');
+    setCurrentWordIndex(0);
+    setCurrentQuestionIndex(0);
+    setAnswers(new Array(questions.length).fill(null));
+    setScore(0);
+    
+    // Reiniciar referencias de tiempo
+    readingStartTimeRef.current = null;
+    readingEndTimeRef.current = null;
+    wordTimesRef.current = [];
+    questionTimesRef.current = [];
+  }, [questions.length]);
+  
+  // Escuchar eventos para reiniciar el juego
+  useEffect(() => {
+    const handleRestart = () => {
+      initializeGame();
+    };
+    
+    window.addEventListener('game:restart', handleRestart);
+    
+    return () => {
+      window.removeEventListener('game:restart', handleRestart);
+    };
+  }, [initializeGame]);
   
   // Iniciar la lectura
-  const startReading = () => {
+  const startReading = useCallback(() => {
     setGameState('reading');
     setCurrentWordIndex(0);
-  };
+    
+    // Iniciar el tiempo de lectura
+    readingStartTimeRef.current = Date.now();
+    
+    // Registrar el tiempo de la primera palabra
+    wordTimesRef.current.push({
+      word: words[0],
+      startTime: Date.now(),
+      endTime: null
+    });
+  }, [words]);
   
   // Avanzar a la siguiente palabra
-  const nextWord = () => {
-    if (currentWordIndex >= words.length - 1) {
-      // Lectura completada, pasar a las preguntas
-      setGameState('questions');
-      setCurrentQuestionIndex(0);
-      return;
+  const nextWord = useCallback(() => {
+    // Registrar el tiempo de finalización de la palabra actual
+    if (wordTimesRef.current.length > 0) {
+      const currentWordData = wordTimesRef.current[wordTimesRef.current.length - 1];
+      currentWordData.endTime = Date.now();
     }
     
-    setCurrentWordIndex(prev => prev + 1);
-  };
+    if (currentWordIndex < words.length - 1) {
+      const nextIndex = currentWordIndex + 1;
+      setCurrentWordIndex(nextIndex);
+      
+      // Registrar el tiempo de inicio de la nueva palabra
+      wordTimesRef.current.push({
+        word: words[nextIndex],
+        startTime: Date.now(),
+        endTime: null
+      });
+    } else {
+      // Finalizar la lectura
+      readingEndTimeRef.current = Date.now();
+      setGameState('questions');
+      
+      // Iniciar el tiempo de la primera pregunta
+      questionTimesRef.current.push({
+        questionId: questions[0]?.id,
+        startTime: Date.now(),
+        endTime: null
+      });
+    }
+  }, [currentWordIndex, words, questions]);
   
   // Seleccionar una respuesta
-  const selectAnswer = (questionIndex, optionIndex) => {
+  const selectAnswer = useCallback((questionIndex, answerIndex) => {
     const newAnswers = [...answers];
-    newAnswers[questionIndex] = optionIndex;
+    newAnswers[questionIndex] = answerIndex;
     setAnswers(newAnswers);
-  };
+  }, [answers]);
   
-  // Pasar a la siguiente pregunta
-  const nextQuestion = () => {
-    if (currentQuestionIndex >= questions.length - 1) {
-      // Calcular puntuación
-      let correctCount = 0;
-      questions.forEach((q, index) => {
-        if (answers[index] === q.correctAnswer) {
-          correctCount++;
-        }
-      });
-      
-      setScore(correctCount);
-      setGameState('results');
-      return;
+  // Avanzar a la siguiente pregunta o finalizar el cuestionario
+  const nextQuestion = useCallback(() => {
+    // Registrar el tiempo de finalización de la pregunta actual
+    if (questionTimesRef.current.length > 0) {
+      const currentQuestionData = questionTimesRef.current[questionTimesRef.current.length - 1];
+      currentQuestionData.endTime = Date.now();
     }
     
-    setCurrentQuestionIndex(prev => prev + 1);
-  };
+    if (currentQuestionIndex < questions.length - 1) {
+      const nextIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(nextIndex);
+      
+      // Registrar el tiempo de inicio de la nueva pregunta
+      questionTimesRef.current.push({
+        questionId: questions[nextIndex]?.id,
+        startTime: Date.now(),
+        endTime: null
+      });
+    } else {
+      // Calcular puntuación
+      let correctCount = 0;
+      for (let i = 0; i < questions.length; i++) {
+        if (answers[i] === questions[i].correctAnswer) {
+          correctCount++;
+        }
+      }
+      setScore(correctCount);
+      
+      // Guardar puntuación
+      saveGameScore(correctCount);
+      
+      // Mostrar resultados
+      setGameState('results');
+    }
+  }, [currentQuestionIndex, questions, answers]);
   
-  // Calcular el progreso de la lectura
-  const readingProgress = ((currentWordIndex + 1) / words.length) * 100;
+  // Guardar puntuación del juego
+  const saveGameScore = useCallback(async (correctCount) => {
+    // Calcular estadísticas del juego
+    const readingTime = readingEndTimeRef.current - readingStartTimeRef.current;
+    const averageReadingTime = readingTime / words.length;
+    
+    // Calcular tiempos de respuesta
+    const answerTimes = questionTimesRef.current.map(q => ({
+      questionId: q.questionId,
+      time: q.endTime - q.startTime
+    }));
+    
+    const totalAnswerTime = answerTimes.reduce((sum, q) => sum + q.time, 0);
+    
+    // Preparar datos para guardar
+    const gameData = {
+      player_id: playerId,
+      level: parseInt(level) || 1,
+      language: locale,
+      text_content: text,
+      text_id: textIdRef.current,
+      word_count: words.length,
+      reading_time: readingTime,
+      average_reading_time: averageReadingTime,
+      questions: questions.map((q, i) => ({
+        id: q.id,
+        question: q.question,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        userAnswer: answers[i]
+      })),
+      correct_answers: correctCount,
+      total_questions: questions.length,
+      answer_times: answerTimes,
+      total_answer_time: totalAnswerTime
+    };
+    
+    try {
+      // Guardar puntuación
+      await scoresService.saveComprehensionGame(gameData);
+      console.log('Game score saved successfully');
+    } catch (error) {
+      console.error('Error saving game score:', error);
+    }
+  }, [playerId, level, locale, text, words.length, questions, answers]);
   
+  // Calcular progreso de lectura
+  const readingProgress = (currentWordIndex / (words.length - 1)) * 100;
+  
+  // Calcular progreso de preguntas
+  const questionProgress = ((currentQuestionIndex + 1) / questions.length) * 100;
+  
+  // Finalizar el juego
+  const finishGame = useCallback(() => {
+    // Calcular puntuación
+    const correctCount = answers.filter((answer, index) => 
+      answer === questions[index].correctAnswer
+    ).length;
+    
+    // Calcular porcentaje de aciertos
+    const percentage = Math.round((correctCount / questions.length) * 100);
+    
+    // Actualizar puntuación
+    setScore(percentage);
+    
+    // Cambiar estado del juego
+    setGameState('results');
+    
+    // Guardar puntuación solo si hay un jugador seleccionado
+    if (shouldSaveProgress) {
+      saveGameScore(correctCount);
+    }
+  }, [answers, questions, shouldSaveProgress, saveGameScore]);
+  
+  // Renderizar el juego según el estado
   return (
     <div className="h-full w-full flex flex-col">
       {/* Barra de progreso */}
-      {gameState === 'reading' && (
-        <div className="w-full bg-base-200 h-4 rounded-full overflow-hidden">
-          <div 
-            className="bg-primary h-full transition-all duration-300 ease-out"
-            style={{ width: `${readingProgress}%` }}
-          ></div>
-        </div>
-      )}
+      <div className="w-full bg-base-200 h-4 rounded-full overflow-hidden">
+        <div 
+          className="bg-green-600 h-full transition-all duration-300 ease-out"
+          style={{ 
+            width: `${gameState === 'reading' ? readingProgress : 
+                    gameState === 'questions' ? questionProgress : 0}%` 
+          }}
+        ></div>
+      </div>
+      
+      {/* Contador de progreso */}
+      <div className="text-center mt-2 text-sm">
+        {gameState === 'reading' && (
+          <>
+            {currentWordIndex + 1} / {words.length}
+          </>
+        )}
+        {gameState === 'questions' && (
+          <>
+            {t('play.question')} {currentQuestionIndex + 1} / {questions.length}
+          </>
+        )}
+      </div>
       
       {/* Área principal del juego */}
       <div className="flex-grow flex items-center justify-center p-4">
+        {gameState === 'loading' && (
+          <div className="text-center">
+            <div className="loading loading-spinner loading-lg text-green-600"></div>
+            <p className="mt-4">{t('loading')}</p>
+          </div>
+        )}
+        
+        {gameState === 'error' && (
+          <div className="text-center">
+            <div className="text-error mb-4">{error}</div>
+            <button className="btn bg-green-600 hover:bg-green-700 text-white" onClick={() => window.location.reload()}>
+              {t('retry')}
+            </button>
+          </div>
+        )}
+        
         {gameState === 'intro' && (
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">{t('play.comprehension')}</h2>
             <p className="mb-6">{t('play.comprehensionInstructions')}</p>
-            <button className="btn btn-primary" onClick={startReading}>
+            <button 
+              className="btn bg-green-600 hover:bg-green-700 text-white" 
+              onClick={startReading}
+              disabled={words.length === 0}
+            >
               {t('play.startReading')}
             </button>
           </div>
@@ -133,76 +317,70 @@ export default function ComprehensionGame({ level, onExit }) {
             className="text-center"
             onClick={nextWord}
           >
-            <div className="text-5xl font-bold mb-8">{words[currentWordIndex]}</div>
+            <div className="text-7xl font-bold mb-8">{words[currentWordIndex]}</div>
             <p className="text-xl opacity-70">{t('play.tapToContinue')}</p>
           </div>
         )}
         
         {gameState === 'questions' && (
-          <div className="w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4">
-              {t('play.question')} {currentQuestionIndex + 1}/{questions.length}
-            </h3>
-            <p className="text-lg mb-4">{questions[currentQuestionIndex].question}</p>
+          <div className="w-full max-w-lg">
+            <h3 className="text-xl font-bold mb-4">{questions[currentQuestionIndex]?.question}</h3>
             
-            <div className="space-y-3">
-              {questions[currentQuestionIndex].options.map((option, index) => (
+            <div className="space-y-3 mb-6">
+              {questions[currentQuestionIndex]?.options.map((option, index) => (
                 <div 
                   key={index}
-                  onClick={() => selectAnswer(currentQuestionIndex, index)}
-                  className={`p-3 border-2 rounded-lg cursor-pointer ${
+                  className={`p-3 border rounded-lg cursor-pointer transition-colors ${
                     answers[currentQuestionIndex] === index 
-                      ? 'border-primary bg-primary/10' 
-                      : 'border-base-300'
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-base-100 hover:bg-green-50 border-green-200'
                   }`}
+                  onClick={() => selectAnswer(currentQuestionIndex, index)}
                 >
                   {option}
                 </div>
               ))}
             </div>
             
-            <div className="mt-6 flex justify-end">
-              <button 
-                className="btn btn-primary" 
-                onClick={nextQuestion}
-                disabled={answers[currentQuestionIndex] === null}
-              >
-                {currentQuestionIndex < questions.length - 1 
-                  ? t('play.nextQuestion') 
-                  : t('play.finishQuiz')}
-              </button>
-            </div>
+            <button 
+              className="btn bg-green-600 hover:bg-green-700 text-white w-full"
+              onClick={nextQuestion}
+              disabled={answers[currentQuestionIndex] === null}
+            >
+              {currentQuestionIndex < questions.length - 1 
+                ? t('play.nextQuestion') 
+                : t('play.finishQuiz')}
+            </button>
           </div>
         )}
         
         {gameState === 'results' && (
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">{t('play.results')}</h2>
-            <div className="text-5xl font-bold mb-6">
-              {score}/{questions.length}
-            </div>
-            <p className="mb-6">
-              {score === questions.length 
-                ? t('play.perfectScore') 
-                : score >= questions.length / 2 
-                  ? t('play.goodScore') 
-                  : t('play.tryAgain')}
-            </p>
-            <button className="btn btn-primary" onClick={onExit}>
-              {t('play.backToMenu')}
-            </button>
-          </div>
+          <GameResults 
+            shouldSaveProgress={shouldSaveProgress}
+            stats={[
+              {
+                title: t('play.score'),
+                value: `${Math.round((answers.filter((answer, index) => 
+                  answer === questions[index].correctAnswer
+                ).length / questions.length) * 100)}%`
+              },
+              {
+                title: t('play.correctAnswers'),
+                value: `${answers.filter((answer, index) => 
+                  answer === questions[index].correctAnswer
+                ).length} / ${questions.length}`
+              }
+            ]}
+            onNewGame={() => {
+              window.dispatchEvent(new Event('game:newConfig'));
+            }}
+            onPlayAgain={() => {
+              initializeGame();
+              startReading();
+            }}
+          />
         )}
       </div>
-      
-      {/* Botón de salida */}
-      {gameState !== 'results' && (
-        <div className="flex justify-center mb-8">
-          <button className="btn btn-circle btn-outline" onClick={onExit}>
-            ✕
-          </button>
-        </div>
-      )}
     </div>
   );
-} 
+}

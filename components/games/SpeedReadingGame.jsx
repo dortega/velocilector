@@ -1,18 +1,14 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import { useParams } from 'next/navigation';
+import { wordsService } from '@/services/words';
+import { scoresService } from '@/services/scores';
+import GameResults from './GameResults';
 
-// Lista de palabras de ejemplo (deberías tener una lista más grande según el nivel)
-const wordsByLevel = {
-  'beginner': ['casa', 'perro', 'gato', 'sol', 'luna', 'agua', 'pan', 'niño', 'flor', 'árbol'],
-  'elementary': ['familia', 'escuela', 'amigo', 'ciudad', 'tiempo', 'comida', 'juego', 'libro', 'calle', 'parque'],
-  'intermediate': ['libertad', 'conocimiento', 'experiencia', 'desarrollo', 'comunicación', 'tecnología', 'educación', 'naturaleza', 'sociedad', 'economía'],
-  'advanced': ['sostenibilidad', 'biodiversidad', 'infraestructura', 'globalización', 'investigación', 'perspectiva', 'metodología', 'implementación', 'innovación', 'colaboración'],
-  'expert': ['epistemología', 'paradigma', 'idiosincrasia', 'interdisciplinariedad', 'contextualización', 'conceptualización', 'multidimensionalidad', 'interoperabilidad', 'descentralización', 'democratización']
-};
-
-export default function SpeedReadingGame({ level, onExit }) {
+export default function SpeedReadingGame({ level, playerId, shouldSaveProgress = false }) {
   const t = useTranslations();
+  const { locale } = useParams();
   const [currentWord, setCurrentWord] = useState('');
   const [wordCount, setWordCount] = useState(0);
   const [totalWords, setTotalWords] = useState(50); // Número total de palabras a mostrar
@@ -20,86 +16,358 @@ export default function SpeedReadingGame({ level, onExit }) {
   const [wordSpeed, setWordSpeed] = useState(2000); // Tiempo en ms entre palabras
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [words, setWords] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [gameFinished, setGameFinished] = useState(false);
+  
+  // Referencias para el seguimiento del tiempo
+  const startTimeRef = useRef(null);
+  const wordTimesRef = useRef([]);
+  const usedWordsRef = useRef([]);
+  const wordTimerRef = useRef(null);
+  
+  // Cargar palabras de la base de datos
+  useEffect(() => {
+    const fetchWords = async () => {
+      try {
+        setLoading(true);
+        const levelNum = parseInt(level) || 1;
+        const fetchedWords = await wordsService.getRandomWords(locale, levelNum, 100);
+        setWords(fetchedWords.map(w => w.word));
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching words:', error);
+        setLoading(false);
+        // Usar palabras de respaldo en caso de error
+        setWords(['error', 'cargando', 'palabras', 'intenta', 'más', 'tarde']);
+      }
+    };
+    
+    fetchWords();
+  }, [level, locale]);
   
   // Determinar si se debe usar avance automático basado en el nivel
   useEffect(() => {
-    // Niveles 3-5 (intermediate, advanced, expert) usan avance automático
-    setAutoAdvance(['intermediate', 'advanced', 'expert'].includes(level));
+    const levelNum = parseInt(level) || 1;
+    
+    // Niveles 5+ usan avance automático
+    setAutoAdvance(levelNum >= 5);
     
     // Ajustar velocidad según el nivel
-    if (level === 'intermediate') setWordSpeed(1500);
-    if (level === 'advanced') setWordSpeed(1000);
-    if (level === 'expert') setWordSpeed(800);
+    if (levelNum >= 5 && levelNum <= 6) setWordSpeed(1500);
+    if (levelNum >= 7 && levelNum <= 8) setWordSpeed(1000);
+    if (levelNum >= 9) setWordSpeed(800);
   }, [level]);
   
-  // Función para obtener una palabra aleatoria del nivel actual
+  // Función para obtener una palabra aleatoria
   const getRandomWord = useCallback(() => {
-    const words = wordsByLevel[level] || wordsByLevel.beginner;
-    return words[Math.floor(Math.random() * words.length)];
-  }, [level]);
+    if (words.length === 0) return 'cargando...';
+    const word = words[Math.floor(Math.random() * words.length)];
+    usedWordsRef.current.push(word);
+    return word;
+  }, [words]);
   
   // Iniciar el juego
-  const startGame = () => {
+  const startGame = useCallback(() => {
+    if (loading) return;
+    
     setCurrentWord(getRandomWord());
-    setWordCount(0);
+    setWordCount(1);
     setIsPlaying(true);
     setIsPaused(false);
-  };
+    setGameFinished(false);
+    
+    // Reiniciar referencias de tiempo
+    startTimeRef.current = Date.now();
+    wordTimesRef.current = [];
+    usedWordsRef.current = [];
+    
+    // Registrar el tiempo de la primera palabra
+    wordTimesRef.current.push({
+      word: currentWord,
+      startTime: Date.now(),
+      endTime: null
+    });
+    
+    // Iniciar temporizador para avance automático
+    if (autoAdvance) {
+      const timerId = setInterval(() => {
+        if (!isPaused) {
+          showNextWord();
+        }
+      }, wordSpeed);
+      
+      return () => clearInterval(timerId);
+    }
+  }, [loading, getRandomWord, autoAdvance, wordSpeed, isPaused, currentWord]);
+  
+  // Guardar puntuación del juego
+  const saveGameScore = useCallback(async () => {
+    // Calcular estadísticas del juego
+    const totalTime = wordTimesRef.current.reduce((sum, word) => {
+      if (word.endTime && word.startTime) {
+        return sum + (word.endTime - word.startTime);
+      }
+      return sum;
+    }, 0);
+    
+    const averageTime = totalTime / wordCount;
+    
+    // Preparar datos para guardar
+    const gameData = {
+      player_id: playerId,
+      level: parseInt(level) || 1,
+      language: locale,
+      word_count: wordCount,
+      words_used: usedWordsRef.current,
+      total_time: totalTime,
+      average_time: averageTime,
+      speed_setting: wordSpeed
+    };
+    
+    try {
+      // Guardar puntuación
+      await scoresService.saveSpeedReadingGame(gameData);
+      console.log('Game score saved successfully');
+    } catch (error) {
+      console.error('Error saving game score:', error);
+    }
+  }, [playerId, level, locale, wordCount, wordSpeed]);
+  
+  // Finalizar el juego
+  const finishGame = useCallback(() => {
+    // Limpiar cualquier temporizador existente
+    if (wordTimerRef.current) {
+      clearTimeout(wordTimerRef.current);
+      wordTimerRef.current = null;
+    }
+    
+    setIsPlaying(false);
+    setGameFinished(true);
+    
+    // Guardar puntuación solo si hay un jugador seleccionado
+    if (shouldSaveProgress) {
+      saveGameScore();
+    }
+  }, [shouldSaveProgress, saveGameScore]);
+  
+  // Función para mostrar la siguiente palabra
+  const showNextWord = useCallback(() => {
+    // Verificar si hemos alcanzado el límite de palabras
+    if (wordCount >= totalWords) {
+      // Usar una función anónima para llamar a finishGame
+      // en lugar de incluirla en las dependencias
+      setIsPlaying(false);
+      setGameFinished(true);
+      
+      // Guardar puntuación solo si hay un jugador seleccionado
+      if (shouldSaveProgress) {
+        saveGameScore();
+      }
+      return;
+    }
+    
+    // Obtener una palabra aleatoria que no se haya usado recientemente
+    let randomIndex;
+    let attempts = 0;
+    let wordToShow;
+    
+    do {
+      randomIndex = Math.floor(Math.random() * words.length);
+      wordToShow = words[randomIndex];
+      attempts++;
+    } while (
+      usedWordsRef.current.includes(wordToShow) && 
+      attempts < 20 && 
+      usedWordsRef.current.length < words.length
+    );
+    
+    // Registrar tiempo de inicio para esta palabra
+    const wordStartTime = Date.now();
+    
+    // Actualizar palabra actual
+    setCurrentWord(wordToShow);
+    
+    // Registrar palabra usada
+    usedWordsRef.current.push(wordToShow);
+    
+    // Incrementar contador de palabras
+    setWordCount(prev => prev + 1);
+    
+    // Registrar tiempo para la palabra anterior si existe
+    if (wordTimesRef.current.length > 0) {
+      const lastWordIndex = wordTimesRef.current.length - 1;
+      wordTimesRef.current[lastWordIndex].endTime = wordStartTime;
+    }
+    
+    // Añadir nueva palabra al registro de tiempos
+    wordTimesRef.current.push({
+      word: wordToShow,
+      startTime: wordStartTime,
+      endTime: null
+    });
+    
+    // Si está en modo automático, programar la siguiente palabra
+    if (autoAdvance && !isPaused) {
+      wordTimerRef.current = setTimeout(() => {
+        // Verificar nuevamente si hemos alcanzado el límite antes de mostrar la siguiente
+        if (wordCount < totalWords) {
+          showNextWord();
+        } else {
+          // Usar una función anónima para llamar a finishGame
+          setIsPlaying(false);
+          setGameFinished(true);
+          
+          // Guardar puntuación solo si hay un jugador seleccionado
+          if (shouldSaveProgress) {
+            saveGameScore();
+          }
+        }
+      }, wordSpeed);
+    }
+  }, [words, wordCount, totalWords, autoAdvance, isPaused, wordSpeed, shouldSaveProgress, saveGameScore]);
+  
+  // Función para manejar tap/click
+  const handleTap = useCallback(() => {
+    if (!isPlaying) return;
+    
+    // Si está en modo manual, mostrar siguiente palabra
+    if (!autoAdvance) {
+      // Limpiar cualquier temporizador existente
+      if (wordTimerRef.current) {
+        clearTimeout(wordTimerRef.current);
+        wordTimerRef.current = null;
+      }
+      
+      // Verificar si hemos alcanzado el límite de palabras
+      if (wordCount >= totalWords) {
+        finishGame();
+      } else {
+        showNextWord();
+      }
+    }
+  }, [isPlaying, autoAdvance, wordCount, totalWords, showNextWord, finishGame]);
   
   // Pausar/reanudar el juego
-  const togglePause = () => {
-    setIsPaused(!isPaused);
-  };
+  const togglePause = useCallback(() => {
+    setIsPaused(prev => !prev);
+  }, []);
   
-  // Avanzar a la siguiente palabra
-  const nextWord = useCallback(() => {
-    if (wordCount >= totalWords - 1) {
-      // Juego completado
-      setIsPlaying(false);
-      return;
-    }
+  // Reiniciar el juego
+  const resetGame = useCallback(() => {
+    setCurrentWord('');
+    setWordCount(0);
+    setIsPlaying(false);
+    setIsPaused(false);
+    setGameFinished(false);
     
-    setCurrentWord(getRandomWord());
-    setWordCount(prev => prev + 1);
-  }, [wordCount, totalWords, getRandomWord]);
+    // Reiniciar referencias
+    startTimeRef.current = null;
+    wordTimesRef.current = [];
+    usedWordsRef.current = [];
+  }, []);
   
-  // Efecto para avance automático
+  // Escuchar eventos para reiniciar el juego
   useEffect(() => {
-    if (!isPlaying || isPaused || !autoAdvance) return;
+    const handleRestart = () => {
+      resetGame();
+    };
     
-    const timer = setTimeout(() => {
-      nextWord();
-    }, wordSpeed);
+    window.addEventListener('game:restart', handleRestart);
     
-    return () => clearTimeout(timer);
-  }, [isPlaying, isPaused, autoAdvance, nextWord, wordSpeed, currentWord]);
+    return () => {
+      window.removeEventListener('game:restart', handleRestart);
+    };
+  }, [resetGame]);
   
-  // Manejar clic/tap para avanzar manualmente
-  const handleTap = () => {
-    if (!isPlaying) {
-      startGame();
-      return;
-    }
-    
-    if (isPaused) {
-      setIsPaused(false);
-      return;
-    }
-    
-    if (!autoAdvance) {
-      nextWord();
-    }
-  };
-  
-  // Calcular el progreso
+  // Calcular progreso
   const progress = (wordCount / totalWords) * 100;
   
+  // Función para guardar el progreso del juego
+  const saveGameProgress = async (stats) => {
+    if (!shouldSaveProgress) return; // No guardar si no hay usuario o jugador
+    
+    try {
+      await gamesService.saveGameProgress({
+        player_id: playerId,
+        game_type: 'speed',
+        level,
+        stats
+      });
+    } catch (error) {
+      console.error('Error saving game progress:', error);
+    }
+  };
+  
+  // Si el juego ha terminado, mostrar resultados
+  if (gameFinished) {
+    // Calcular estadísticas para mostrar
+    const averageSpeed = Math.round(60000 / (wordTimesRef.current.reduce((sum, word) => {
+      if (word.endTime && word.startTime) {
+        return sum + (word.endTime - word.startTime);
+      }
+      return sum;
+    }, 0) / wordCount));
+    
+    const stats = [
+      {
+        title: t('play.wordsRead'),
+        value: wordCount
+      },
+      {
+        title: t('play.averageSpeed'),
+        value: `${averageSpeed} ${t('play.wpm')}`
+      }
+    ];
+    
+    return (
+      <div className="h-full w-full flex flex-col">
+        {/* Barra de progreso */}
+        <div className="w-full bg-base-200 h-4 rounded-full overflow-hidden">
+          <div 
+            className="bg-green-600 h-full transition-all duration-300 ease-out"
+            style={{ width: `${progress}%` }}
+          ></div>
+        </div>
+        
+        {/* Contador de palabras */}
+        <div className="text-center mt-2 text-sm">
+          {wordCount} / {totalWords}
+        </div>
+        
+        <GameResults 
+          shouldSaveProgress={shouldSaveProgress}
+          stats={stats}
+          onNewGame={() => {
+            // Reiniciar el juego
+            setGameFinished(false);
+            setWordCount(0);
+            setCurrentWord('');
+            wordTimesRef.current = [];
+            usedWordsRef.current = [];
+            window.dispatchEvent(new Event('game:newConfig'));
+          }}
+          onPlayAgain={() => {
+            // Reiniciar el mismo juego
+            setGameFinished(false);
+            setWordCount(0);
+            setCurrentWord('');
+            wordTimesRef.current = [];
+            usedWordsRef.current = [];
+            startGame();
+          }}
+        />
+      </div>
+    );
+  }
+  
+  // Renderizar el juego en curso
   return (
     <div className="h-full w-full flex flex-col">
       {/* Barra de progreso */}
       <div className="w-full bg-base-200 h-4 rounded-full overflow-hidden">
         <div 
-          className="bg-primary h-full transition-all duration-300 ease-out"
+          className="bg-green-600 h-full transition-all duration-300 ease-out"
           style={{ width: `${progress}%` }}
         ></div>
       </div>
@@ -122,7 +390,11 @@ export default function SpeedReadingGame({ level, onExit }) {
                 ? t('play.speedInstructions.auto', { speed: wordSpeed / 1000 })
                 : t('play.speedInstructions.manual')}
             </p>
-            <button className="btn btn-primary" onClick={startGame}>
+            <button 
+              className="btn bg-green-600 hover:bg-green-700 text-white" 
+              onClick={startGame}
+              disabled={loading}
+            >
               {t('play.startGame')}
             </button>
           </div>
@@ -140,13 +412,10 @@ export default function SpeedReadingGame({ level, onExit }) {
       {isPlaying && (
         <div className="flex justify-center gap-4 mb-8">
           {autoAdvance && (
-            <button className="btn btn-circle btn-outline" onClick={togglePause}>
+            <button className="btn btn-circle border-green-600 text-green-600 hover:bg-green-100" onClick={togglePause}>
               {isPaused ? '▶' : '⏸'}
             </button>
           )}
-          <button className="btn btn-circle btn-outline" onClick={onExit}>
-            ✕
-          </button>
         </div>
       )}
     </div>
