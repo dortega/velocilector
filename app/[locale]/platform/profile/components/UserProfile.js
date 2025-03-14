@@ -12,14 +12,14 @@ export default function UserProfile({ isModal = false }) {
     async function loadUserData() {
       setLoading(true);
       try {
-        const { user } = await authService.getCurrentUser();
-        if (user) {
+        const userData = await authService.getCurrentUser();
+        if (userData) {
           setUser({
-            email: user.email,
-            createdAt: new Date(user.created_at).toLocaleDateString(),
-            id: user.id,
-            lastSignIn: user.last_sign_in_at 
-              ? new Date(user.last_sign_in_at).toLocaleDateString() 
+            email: userData.email,
+            createdAt: new Date(userData.created_at).toLocaleDateString(),
+            id: userData.id,
+            lastSignIn: userData.last_sign_in_at 
+              ? new Date(userData.last_sign_in_at).toLocaleDateString() 
               : null
           });
         }

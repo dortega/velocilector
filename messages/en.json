@@ -131,12 +131,19 @@
       "welcome": "Welcome to the platform",
       "description": "Here you can manage your players and access games"
     },
+    "progress": {
+      "title": "Your Progress",
+      "empty": "You don't have any progress recorded yet. Start playing to see your statistics!"
+    },
     "profile": {
       "title": "Profile",
-      "close": "Close",
+      "noUserData": "No user data found",
       "name": "Name",
       "email": "Email",
-      "language": "Language",
+      "language": "Preferred Language",
+      "joined": "Joined",
+      "update": "Update Profile",
+      "close": "Close",
       "save": "Save changes",
       "changePassword": "Change password",
       "currentPassword": "Current password",
